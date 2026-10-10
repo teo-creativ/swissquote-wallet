@@ -1,5 +1,5 @@
 // Checks that a deployed URL serves the client routes (CLAUDE.md rule 9: check the production URL after every deploy).
-// Usage: npm run check-routes -- https://sq-keys.vercel.app
+// Usage: npm run check-routes -- https://sq-keys-iota.vercel.app
 const base = (process.argv[2] ?? "http://localhost:3000").replace(/\/$/, "");
 const routes = ["/", "/login", "/verify", "/documents", "/lawyer", "/key", "/creating", "/home", "/send", "/security", "/recovery", "/legal/terms", "/dev/passkey", "/api/public-config", "/console"];
 

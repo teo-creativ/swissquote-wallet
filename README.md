@@ -7,9 +7,9 @@
 
 | | URL | Status |
 |---|---|---|
-| Client app | https://sq-keys.vercel.app | `[TO VERIFY]` deployment may be older than this branch |
+| Client app | https://sq-keys-iota.vercel.app | `[TO VERIFY]` deployment may be older than this branch |
 | Lawyer portal (and P2 node, planned) | https://sq-keys-lawyer.vercel.app | `[TO VERIFY]` same |
-| Swissquote console (inside the client app) | https://sq-keys.vercel.app/console | `[TO VERIFY]` password gate is real, data is seeded |
+| Swissquote console (inside the client app) | https://sq-keys-iota.vercel.app/console | `[TO VERIFY]` password gate is real, data is seeded |
 | Swissquote mock service and P3 node | `sq-keys-mock` (Vercel) | **Not built yet**, see section 3 |
 | Source | https://github.com/teo-creativ/swissquote-wallet | |
 
@@ -315,7 +315,7 @@ Three Vercel projects and three Supabase projects, one per party, so that the se
 | `lawyer/` | `sq-keys-lawyer` | `sq-keys-lawyer` | Téo |
 | `sq-mock/` | `sq-keys-mock` | `sq-keys-mock` | Théotime |
 
-Region: Vercel functions `fra1` (`vercel.json`), Supabase Frankfurt. Deploy from each folder with `npx vercel --prod`; project names matter because passkeys are bound to the domain (`sq-keys.vercel.app`, `sq-keys-lawyer.vercel.app`). `NEXT_PUBLIC_*` variables are inlined at build time, so changing them requires a new deploy.
+Region: Vercel functions `fra1` (`vercel.json`), Supabase Frankfurt. Deploy from each folder with `npx vercel --prod`; project names matter because passkeys are bound to the domain (`sq-keys-iota.vercel.app`, `sq-keys-lawyer.vercel.app`). `NEXT_PUBLIC_*` variables are inlined at build time, so changing them requires a new deploy.
 
 Variables per project (names only; see CDC annex C):
 - **Client app:** `NEXT_PUBLIC_CHAIN_ID`, `NEXT_PUBLIC_EXPLORER_URL`, `NEXT_PUBLIC_SQKEYS_MODE`, `RPC_URL`, `USDC_ADDRESS`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `SESSION_SECRET`, `LAWYER_URL`, `SQ_URL`, `APP_TO_LAWYER_SECRET`, `APP_TO_SQ_SECRET`, `ALLOW_NO_PRF`, `EMERGENCY_PATH_ENABLED`, `CONSOLE_PASSWORD`.

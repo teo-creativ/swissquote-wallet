@@ -156,7 +156,7 @@ Format: works now / faked / broken / smallest change for live. Modes: `NEXT_PUBL
 
 | URL | Status | | URL | Status |
 |---|---|---|---|---|
-| `sq-keys.vercel.app/` | 200 | | `sq-keys-lawyer.vercel.app/` | 200 |
+| `sq-keys-iota.vercel.app/` | 200 | | `sq-keys-lawyer.vercel.app/` | 200 |
 | `/home` | 200 | | `/login` | 200 |
 | `/login` | **404** | | `/invite/test` | **404** |
 | `/key`, `/send`, `/lawyer`, `/security`, `/recovery`, `/legal/terms` | **404** | | `/dashboard`, `/requests`, `/clients`, `/journal`, `/legal` | **404** |
@@ -240,7 +240,7 @@ Defects and risks, most important first:
 | W5 | `allowCredentials[].transports = ["internal"]` | can hide synced or hybrid passkeys | omit `transports` |
 | W6 | Challenge is local random bytes, no server round trip | acceptable for P1 wrapping (the PRF output is what protects the key; nobody verifies an attestation, and CDC A.1 `device/register` does not ask for one). Do not present the phone passkey as proof of identity | accept, or fetch options from the server on mount |
 | W7 | In-app and unsupported browsers not detected on screen | QR codes opened from WhatsApp, Instagram, a webview: passkeys fail with `SecurityError`/`NotSupportedError` | call `detectInAppBrowser` + `interpretCapabilities` on `/login` and `/key` and show an "Open in Chrome/Safari" banner |
-| W8 | `rpId` is the exact hostname | a passkey made on `sq-keys.vercel.app` is invisible on any other host: preview URLs (`sq-keys-git-...vercel.app`), `localhost`, a deployment URL. CDC 11.2 says create passkeys in advance on the production domain | demo only on the two fixed domains; write it on the rehearsal checklist |
+| W8 | `rpId` is the exact hostname | a passkey made on `sq-keys-iota.vercel.app` is invisible on any other host: preview URLs (`sq-keys-git-...vercel.app`), `localhost`, a deployment URL. CDC 11.2 says create passkeys in advance on the production domain | demo only on the two fixed domains; write it on the rehearsal checklist |
 | W9 | After lawyer approval, the client must unwrap P1 | `get()` with PRF needs a gesture on iOS; if the waiting screen auto-continues after the lawyer approves, there is no tap | unlock P1 at the "Send" tap (review screen) and keep the key in memory for the wait, or add a "Confirm with Face ID" button when `approved`. No contract change |
 | W10 | Honor Magic: default browser is not Chrome, and PRF support depends on the credential provider | the demo script uses the Honor Magic; S6 is untested | test now on that phone with Chrome and with the default browser; decide whether to use `ALLOW_NO_PRF=true` (reduced protection, must be labeled) |
 | W11 | Fallback key in IndexedDB is gated by app code only | acceptable if shown as "Reduced protection" (CDC 4.4); never silent | already coded as such; make sure the UI shows it |
