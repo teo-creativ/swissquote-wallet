@@ -44,18 +44,14 @@ A client invited you to protect their wallet. You are free to accept or to decli
 
 ## Recovery and exit
 - A recovery moves all funds of the client to a new wallet. It needs an identity check by Swissquote, your approval and a waiting period. You and the client can cancel it during the waiting period.
+- If a client loses their phone, your approval is one of the checks before a new key is created. The client is alerted, and the journal can be verified.
 - An exit lets the client leave without Swissquote, with their exit kit and your approval. It is never automatic.
 - Before approving a recovery or an exit, contact the client by another channel (phone call).
 - You and Swissquote together hold two of the three parts. This is why a recovery has several independent checks and is written to the journal.
+- Your approval only protects the client if you are independent from Swissquote: the risk that remains is two independent professionals acting together against the client.
 
 ## Your professional duties
-This portal does not tell you which professional or regulatory rules apply to you in this role. In a real product, your status under anti-money laundering rules and your duty of professional secrecy would have to be assessed before you accept. This has not been done for this prototype.
-
-## Recovery and independence
-If a client loses their phone, your approval is one of the checks before a new key is created. The others are an identity check by Swissquote, a waiting period during which the client can cancel, a verifiable journal, and alerts to the client. Your approval only protects the client if you are independent from Swissquote: the risk that remains is two independent professionals acting together against the client.
-
-## Your own obligations
-Depending on the country and the profession, a lawyer or notary who takes part in controlling client funds may have obligations of their own, for example under anti-money-laundering rules or professional secrecy. This prototype does not assess them for you. Check them with your professional body before acting for a real client.
+This portal does not tell you which professional or regulatory rules apply to you in this role. Depending on the country and the profession, a lawyer or notary who takes part in controlling client funds may have obligations of their own. In a real product, your status under anti-money laundering rules and your duty of professional secrecy would have to be assessed before you accept. This has not been done for this prototype. Check your obligations with your professional body before acting for a real client.
 
 ## About this prototype
 This is a student prototype. It is not an official Swissquote product. It runs on a test network with no real funds. In this demo the lawyer is played by a team member.
@@ -76,10 +72,9 @@ This is a student prototype. It is not an official Swissquote product. It runs o
 - Each request that needs you: type, amount, recipient address, the reasons it needs you, and the time.
 - Your decision on each request, with a hash of the passkey signature as proof.
 - The client's policy and each version of it.
-- Nothing else: no Swissquote client number, no identity documents, no selfie. The portal only knows a pseudonymous reference.
 
 ## What the portal does not receive
-- The client's Swissquote client number and identity documents. The portal only knows an anonymous reference.
+- The client's Swissquote client number, identity documents and selfie. The portal only knows an anonymous reference.
 - The client's part of the key and Swissquote's part of the key.
 
 ## The journal
