@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatAge, formatUpdated, shortAddress, shortHash } from "./format";
+import { formatAge, formatDate, formatDateTime, formatTime, formatUpdated, shortAddress, shortHash } from "./format";
 
 const NOW = Date.parse("2026-10-10T12:00:00Z");
 const ago = (seconds: number) => new Date(NOW - seconds * 1000).toISOString();
@@ -31,5 +31,14 @@ describe("shortAddress / shortHash", () => {
     expect(shortAddress("0x1234")).toBe("0x1234");
     expect(shortHash("9f2c41d7a0b34e58c61d0e2a7b8f3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d")).toBe("0x9f2c41…b3c4d");
     expect(shortHash("0xabc")).toBe("0xabc");
+  });
+});
+
+describe("date and time", () => {
+  const iso = "2026-10-10T15:22:14Z";
+  it("formats in the requested zone", () => {
+    expect(formatDate(iso, "UTC")).toBe("10 Oct 2026");
+    expect(formatTime(iso, "UTC")).toBe("15:22:14");
+    expect(formatDateTime(iso, "UTC")).toBe("10 Oct 2026, 15:22");
   });
 });

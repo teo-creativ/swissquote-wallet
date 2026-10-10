@@ -1,10 +1,7 @@
-import { EmptyState } from "@/components/ui";
+import { ClientsView } from "@/components/portal/ClientsView";
+
+export const metadata = { title: "Clients · SQ Keys Lawyer" };
 
 export default function ClientsPage() {
-  return (
-    <>
-      <h1 className="text-[28px] font-semibold leading-9 text-ink">Clients</h1>
-      <EmptyState title="No clients yet." className="mt-6 rounded-card border border-line bg-white" />
-    </>
-  );
+  return <ClientsView />;
 }

@@ -28,6 +28,8 @@ const LABELS: Record<PolicyField, string> = {
 
 const ADDRESS = /^0x[0-9a-fA-F]{40}$/;
 
+export const isAddress = (value: string): boolean => ADDRESS.test(value);
+
 /** "5" -> "5.00", "5.5" -> "5.50", "5.000000" -> "5.00". Returns null when not a valid USDC amount (max 6 decimals). */
 export function normalizeAmount(value: string): string | null {
   const v = value.trim();
@@ -82,18 +84,24 @@ function unique(addresses: string[]): string[] {
   return addresses.filter((a) => (seen.has(key(a)) ? false : (seen.add(key(a)), true)));
 }
 
-/** Human-readable problems, empty when the policy can be saved. */
-export function validatePolicy(p: PolicyEdit): string[] {
-  const problems: string[] = [];
-  if (normalizeAmount(p.perTxCap) === null) problems.push("Per transfer must be an amount in USDC, for example 5.00.");
-  if (normalizeAmount(p.dailyCap) === null) problems.push("Per day must be an amount in USDC, for example 10.00.");
-  if (!Number.isInteger(p.hourlyCount) || p.hourlyCount < 0) problems.push("Transfers per hour must be a whole number, 0 or more.");
-  if (!Number.isInteger(p.dailyCount) || p.dailyCount < 0) problems.push("Transfers per day must be a whole number, 0 or more.");
+export type PolicyFieldErrors = Partial<Record<"perTxCap" | "dailyCap" | "hourlyCount" | "dailyCount" | "approvedRecipients", string>>;
+
+/** One message per field, so the form can show it next to the input. Empty object = the policy can be saved. */
+export function policyFieldErrors(p: PolicyEdit): PolicyFieldErrors {
+  const errors: PolicyFieldErrors = {};
   const perTx = normalizeAmount(p.perTxCap);
   const daily = normalizeAmount(p.dailyCap);
-  if (perTx && daily && Number(perTx) > Number(daily)) problems.push("Per transfer cannot be higher than per day.");
-  for (const a of p.approvedRecipients) {
-    if (!ADDRESS.test(a)) problems.push(`"${a}" is not a valid address.`);
-  }
-  return problems;
+  if (perTx === null) errors.perTxCap = "Per transfer must be an amount in USDC, for example 5.00.";
+  if (daily === null) errors.dailyCap = "Per day must be an amount in USDC, for example 10.00.";
+  if (perTx && daily && Number(perTx) > Number(daily)) errors.perTxCap = "Per transfer cannot be higher than per day.";
+  if (!Number.isInteger(p.hourlyCount) || p.hourlyCount < 0) errors.hourlyCount = "Transfers per hour must be a whole number, 0 or more.";
+  if (!Number.isInteger(p.dailyCount) || p.dailyCount < 0) errors.dailyCount = "Transfers per day must be a whole number, 0 or more.";
+  const bad = p.approvedRecipients.find((a) => !ADDRESS.test(a));
+  if (bad !== undefined) errors.approvedRecipients = `"${bad}" is not a valid address.`;
+  return errors;
+}
+
+/** Human-readable problems, empty when the policy can be saved. */
+export function validatePolicy(p: PolicyEdit): string[] {
+  return Object.values(policyFieldErrors(p));
 }

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { PolicyEdit } from "./lawyerApi.types";
-import { diffPolicy, normalizeAmount, validatePolicy } from "./policy";
+import { diffPolicy, isAddress, normalizeAmount, policyFieldErrors, validatePolicy } from "./policy";
 
 const A = "0x3fD8a1C6e5B702d94A0c7E18b6F35d29a4C0e8B1";
 const B = "0x84c0E5a7B1d3F962e0A4c8D7b5F13e69a2C0d4E8";
@@ -74,5 +74,30 @@ describe("validatePolicy", () => {
   it("rejects a per-transfer limit above the daily limit, and allows zero (manual mode)", () => {
     expect(validatePolicy({ ...base, perTxCap: "11" })).toEqual(["Per transfer cannot be higher than per day."]);
     expect(validatePolicy({ ...base, perTxCap: "0" })).toEqual([]);
+  });
+});
+
+describe("policyFieldErrors", () => {
+  it("is empty for a valid policy", () => {
+    expect(policyFieldErrors(base)).toEqual({});
+  });
+  it("attaches each problem to its own field", () => {
+    const e = policyFieldErrors({ ...base, perTxCap: "x", hourlyCount: NaN, dailyCount: -2, approvedRecipients: ["0x1"] });
+    expect(Object.keys(e).sort()).toEqual(["approvedRecipients", "dailyCount", "hourlyCount", "perTxCap"]);
+  });
+  it("puts the per-transfer versus per-day problem on the per-transfer field", () => {
+    expect(policyFieldErrors({ ...base, perTxCap: "10.01" })).toEqual({ perTxCap: "Per transfer cannot be higher than per day." });
+    expect(policyFieldErrors({ ...base, perTxCap: "10" })).toEqual({});
+  });
+  it("rejects empty counts (an empty input parses to NaN)", () => {
+    expect(policyFieldErrors({ ...base, dailyCount: Number("") || NaN })).toHaveProperty("dailyCount");
+  });
+});
+
+describe("isAddress", () => {
+  it("accepts 0x plus 40 hex characters only", () => {
+    expect(isAddress(A)).toBe(true);
+    expect(isAddress("0x123")).toBe(false);
+    expect(isAddress(A.slice(2))).toBe(false);
   });
 });

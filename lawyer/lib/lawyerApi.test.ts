@@ -95,6 +95,24 @@ describe("decide", () => {
     expect((await done(api.getClients())).find((c) => c.id === "client.lea")?.status).toBe("active");
   });
 
+  it("completes the timeline when the waiting period ends, and then it can no longer be cancelled", async () => {
+    await done(api.decide("req_03", "approve"));
+    await vi.advanceTimersByTimeAsync(121_000);
+    const r = await done(api.getRequest("req_03"));
+    expect(r.status).toBe("approved");
+    expect(r.recovery!.timeline.every((s) => s.state === "done")).toBe(true);
+    expect((await done(api.getClients())).find((c) => c.id === "client.lea")?.status).toBe("active");
+    await expect(done(api.decide("req_03", "refuse"))).rejects.toMatchObject({ code: "REQUEST_NOT_PENDING" });
+  });
+
+  it("handles an exit request the same way, without an identity check", async () => {
+    const r = await done(api.getRequest("req_04"));
+    expect(r.kind).toBe("exit");
+    expect(r.recovery?.identity).toBeUndefined();
+    await done(api.decide("req_04", "approve"));
+    expect((await done(api.getRequest("req_04"))).recovery?.delayEndsAt).toBeDefined();
+  });
+
   it("expires pending requests after their deadline", async () => {
     await vi.advanceTimersByTimeAsync(49 * 3_600_000);
     expect((await done(api.getRequests("pending"))).length).toBe(0);
@@ -112,6 +130,22 @@ describe("policy", () => {
     const types = (await done(api.getJournal(3))).entries.map((e) => e.type);
     expect(types).toContain("POLICY_CHANGED");
     expect(types.filter((t) => t === "RECIPIENT_REVOKED")).toHaveLength(2);
+  });
+
+  it("shows every new version in the history, including a recipients-only change", async () => {
+    const policyEntries = async () => (await done(api.getJournal(200))).entries.filter((e) => e.type === "POLICY_CHANGED" && e.clientName === "Léa Martin");
+    const before = await policyEntries();
+    expect(before[0].summary).toMatch(/^Policy v3 saved/);
+
+    const p = await done(api.getPolicy("client.lea"));
+    await done(api.updatePolicy("client.lea", { ...p, approvedRecipients: [p.approvedRecipients[0]] }));
+    await done(api.updatePolicy("client.lea", { ...(await done(api.getPolicy("client.lea"))), dailyCount: 8 }));
+
+    const after = await policyEntries();
+    expect(after).toHaveLength(before.length + 2);
+    expect(after[0].summary).toMatch(/^Policy v5 saved: Transfers per day 6 → 8/);
+    expect(after[1].summary).toMatch(/^Policy v4 saved: 1 recipient\(s\) revoked/);
+    expect((await done(api.getClients())).find((c) => c.id === "client.lea")?.policyVersion).toBe(5);
   });
 
   it("does nothing when nothing changed", async () => {

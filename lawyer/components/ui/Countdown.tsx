@@ -9,11 +9,13 @@ type CountdownProps = {
   endsAt: number;
   /** Label before the time. Default from design.md L7: "Time left". */
   label?: string;
+  /** Text once the time is up. "Expired" for a request, "Waiting period over" for a recovery delay. */
+  doneLabel?: string;
   className?: string;
 };
 
 /** Pill "Time left 02:40". Ticks every second; shows "Expired" at zero. Renders a placeholder until mounted (no hydration mismatch). */
-export function Countdown({ endsAt, label = "Time left", className = "" }: CountdownProps) {
+export function Countdown({ endsAt, label = "Time left", doneLabel = "Expired", className = "" }: CountdownProps) {
   const [now, setNow] = useState<number | null>(null);
 
   useEffect(() => {
@@ -32,7 +34,7 @@ export function Countdown({ endsAt, label = "Time left", className = "" }: Count
       } ${className}`}
     >
       <Timer size={16} strokeWidth={1.75} aria-hidden="true" />
-      {done ? "Expired" : `${label} ${left === null ? "--:--" : formatRemaining(left)}`}
+      {done ? doneLabel : `${label} ${left === null ? "--:--" : formatRemaining(left)}`}
     </span>
   );
 }

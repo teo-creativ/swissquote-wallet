@@ -3,16 +3,13 @@
 import { Check, ChevronRight, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button, Spinner } from "@/components/ui";
+import { formatDate } from "@/lib/format";
 import { AuthBody, AuthHero } from "./AuthCard";
 import { InvitationProblem } from "./InvitationProblem";
 import { useInvitation } from "./useInvitation";
 
 const CAN = ["Approve or decline large or unusual transfers", "Approve or decline recoveries and exits", "Set the limits for this client"];
 const CANNOT = ["Move funds alone", "See their everyday transfers", "Access their phone key or Swissquote's part"];
-
-export function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
-}
 
 /** L1. Texts: annex F.6. */
 export function InviteIntro({ token }: { token: string }) {

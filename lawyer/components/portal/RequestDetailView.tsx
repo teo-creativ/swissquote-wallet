@@ -3,19 +3,21 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
-import { ChevronRight, Fingerprint } from "lucide-react";
-import { Banner, Button, Card, Checkbox, CopyField, Countdown, EmptyState, Spinner, StatusChip, useToast } from "@/components/ui";
+import { Fingerprint } from "lucide-react";
+import { Banner, Button, Card, Checkbox, CopyField, Countdown, Spinner, StatusChip, useToast } from "@/components/ui";
 import { decide, getRequest } from "@/lib/lawyerApi";
 import type { RequestDetail } from "@/lib/lawyerApi.types";
 import { formatAge, shortAddress, shortHash } from "@/lib/format";
 import { REASON_LABEL } from "@/lib/labels";
 
+import { Breadcrumb, Line } from "./detailParts";
+import { RecoveryDetail } from "./RecoveryDetail";
 import { UpdatedAgo } from "./UpdatedAgo";
 import { usePolling } from "./usePolling";
 
 const NOTE = "Your approval applies to this exact amount and recipient only.";
 
-/** L6 for transfers. Recovery and exit requests get a read-only summary until L7 exists. */
+/** L6 for transfers, L7 (RecoveryDetail) for recovery and exit requests. */
 export function RequestDetailView({ id }: { id: string }) {
   const load = useCallback(() => getRequest(id), [id]);
   const { data, error, updatedAt, refresh } = usePolling(load);
@@ -37,28 +39,7 @@ export function RequestDetailView({ id }: { id: string }) {
   return data.kind === "transfer" ? (
     <TransferDetail request={data} updatedAt={updatedAt} refresh={refresh} />
   ) : (
-    <OtherKindDetail request={data} updatedAt={updatedAt} />
-  );
-}
-
-function Breadcrumb({ current }: { current: string }) {
-  return (
-    <nav aria-label="Breadcrumb" className="flex items-center gap-1 text-sm text-muted">
-      <Link href="/requests" className="inline-flex min-h-11 items-center rounded-pill pr-1 font-medium text-warn">
-        Requests
-      </Link>
-      <ChevronRight size={16} strokeWidth={1.75} aria-hidden="true" />
-      <span aria-current="page">{current}</span>
-    </nav>
-  );
-}
-
-function Line({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div className="flex items-baseline justify-between gap-4 border-b border-line py-3 last:border-b-0">
-      <dt className="text-sm text-muted">{label}</dt>
-      <dd className="text-right text-sm font-medium text-ink">{children}</dd>
-    </div>
+    <RecoveryDetail request={data} updatedAt={updatedAt} refresh={refresh} />
   );
 }
 
@@ -233,39 +214,6 @@ function TransferDetail({
           </div>
         </Card>
       </div>
-    </div>
-  );
-}
-
-/** Recovery and exit: read-only until the L7 screen is built. Texts: annex F.6. */
-function OtherKindDetail({ request: r, updatedAt }: { request: RequestDetail; updatedAt: number | null }) {
-  const isExit = r.kind === "exit";
-  const title = isExit ? "Exit request without Swissquote" : "Recovery request";
-  return (
-    <div className="flex flex-col gap-6">
-      <div>
-        <Breadcrumb current={title} />
-        <div className="mt-1 flex flex-wrap items-center gap-3">
-          <h1 className="text-[28px] font-semibold leading-9 text-ink">{title}</h1>
-          <StatusChip status={r.status} />
-          <UpdatedAgo at={updatedAt} className="ml-auto" />
-        </div>
-      </div>
-      <Banner variant="warning">Contact the client by another channel (phone call) before approving.</Banner>
-      <Card title={r.clientName}>
-        {r.recovery ? (
-          <div className="flex flex-col gap-4">
-            <CopyField label="Old wallet" value={r.recovery.oldAddress} display={shortAddress(r.recovery.oldAddress)} />
-            {isExit && r.to && <CopyField label="Destination address" value={r.to} display={shortAddress(r.to)} />}
-            {!isExit && r.recovery.newAddress && (
-              <CopyField label="New wallet" value={r.recovery.newAddress} display={shortAddress(r.recovery.newAddress)} />
-            )}
-          </div>
-        ) : (
-          <EmptyState title="No details available." />
-        )}
-        <p className="mt-5 text-xs text-muted">Approve, Decline and Cancel recovery arrive with the recovery screen (L7).</p>
-      </Card>
     </div>
   );
 }

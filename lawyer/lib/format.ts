@@ -30,3 +30,19 @@ export function shortHash(hash: string): string {
   const h = hash.startsWith("0x") ? hash : `0x${hash}`;
   return h.length <= 18 ? h : `${h.slice(0, 8)}…${h.slice(-5)}`;
 }
+
+/** "17 Oct 2026". Local time zone unless one is given (tests use UTC). */
+export function formatDate(iso: string, timeZone?: string): string {
+  return new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone });
+}
+
+/** "15:22:14" (24 h, with seconds: the demo waiting period is only 2 minutes). */
+export function formatTime(iso: string, timeZone?: string): string {
+  return new Date(iso).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false, timeZone });
+}
+
+/** "10 Oct 2026, 15:20". */
+export function formatDateTime(iso: string, timeZone?: string): string {
+  const t = new Date(iso).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone });
+  return `${formatDate(iso, timeZone)}, ${t}`;
+}

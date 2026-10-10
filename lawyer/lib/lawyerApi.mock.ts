@@ -397,10 +397,11 @@ export async function updatePolicy(clientId: string, p: PolicyEdit): Promise<voi
 
   const clientName = store.clients.find((c) => c.id === clientId)?.displayName;
   const version = current.version + 1;
-  if (diff.changes.length > 0) {
-    const text = diff.changes.map((c) => `${c.label} ${c.before} → ${c.after}`).join("; ");
-    append("POLICY_CHANGED", `Policy v${version} saved: ${text}.`, clientName);
-  }
+  // Every new version gets a POLICY_CHANGED entry: the L8 version history is built from them.
+  const parts = diff.changes.map((c) => `${c.label} ${c.before} → ${c.after}`);
+  if (diff.addedRecipients.length > 0) parts.push(`${diff.addedRecipients.length} recipient(s) added`);
+  if (diff.removedRecipients.length > 0) parts.push(`${diff.removedRecipients.length} recipient(s) revoked`);
+  append("POLICY_CHANGED", `Policy v${version} saved: ${parts.join("; ")}.`, clientName);
   for (const a of diff.addedRecipients) append("RECIPIENT_ADDED", `Known recipient added: ${short(a)}.`, clientName);
   for (const a of diff.removedRecipients) append("RECIPIENT_REVOKED", `Known recipient revoked: ${short(a)}.`, clientName);
   store.policies[clientId] = { ...next, approvedRecipients: [...next.approvedRecipients], version };
