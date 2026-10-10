@@ -123,7 +123,7 @@ function Home({ account }: { account: Account }) {
       <div className="mt-4 grid grid-cols-2 gap-3">
         <Button variant="secondary" icon={<ArrowUpRight size={24} strokeWidth={1.75} />} onClick={() => router.push("/send")}>Send</Button>
         <Button variant="secondary" icon={<ArrowDownLeft size={24} strokeWidth={1.75} />} onClick={() => router.push("/receive")}>Receive</Button>
-        <Button variant="secondary" className="col-span-2" icon={<Landmark size={24} strokeWidth={1.75} />} onClick={() => router.push("/deposit")}>From Swissquote</Button>
+        <Button variant="secondary" className="col-span-2" icon={<Landmark size={24} strokeWidth={1.75} />} onClick={() => router.push("/from-swissquote")}>From Swissquote</Button>
       </div>
 
       <section className="mt-8">

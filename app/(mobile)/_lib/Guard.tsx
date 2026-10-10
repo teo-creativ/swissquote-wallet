@@ -26,6 +26,14 @@ export function routesFor(account: Account): string[] {
 
 export const entryRoute = (account: Account): string => routesFor(account)[0];
 
+const ONBOARDING = ["/verify", "/documents", "/key", "/lawyer", "/creating"];
+
+/** Onboarding routes follow the status steps; once the wallet exists (active, recovering) every other screen is open. */
+export function isAllowed(account: Account, route: string): boolean {
+  if (account.status === "active" || account.status === "recovering") return !ONBOARDING.includes(route);
+  return routesFor(account).includes(route);
+}
+
 /** Checks the session and the account status once, on mount. Wrong step: redirect. Not signed in: /login. */
 export function Guard({ route, children }: { route: string; children: (account: Account) => ReactNode }) {
   const router = useRouter();
@@ -39,9 +47,8 @@ export function Guard({ route, children }: { route: string; children: (account: 
     getAccount().then(
       (a) => {
         if (!alive) return;
-        const allowed = routesFor(a);
-        if (allowed.includes(route)) setAccount(a);
-        else router.replace(allowed[0]);
+        if (isAllowed(a, route)) setAccount(a);
+        else router.replace(entryRoute(a));
       },
       (e: unknown) => {
         if (!alive) return;
