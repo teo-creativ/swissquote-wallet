@@ -380,6 +380,8 @@ Si la génération de clé à trois parties, la signature par paire ou le transp
 | 5 | L'avocat crée son compte et sa passkey | L'avocat ouvre le lien, saisit son nom et son cabinet, crée sa passkey (WebAuthn, domaine du portail), accepte son rôle. Le portail prépare le nœud P2 pour ce client et notifie l'app. | L1, L2 |
 | 6 | La 3ᵉ part revient à Swissquote | Quand l'avocat a accepté, l'app lance la **génération de clé à trois** : navigateur du client (P1), nœud de l'avocat (P2), nœud de Swissquote (P3). Chaque part naît dans son environnement et n'en sort jamais. Le navigateur chiffre P1 avec la clé PRF et l'enregistre dans IndexedDB. | C6 |
 
+> **Order changed by team decision (client app):** the lawyer invitation (step 4, C5) now comes BEFORE the passkey (step 3, C4). Order shown to the client: C3, C5, C4, C6. Step 6 creates the three shares together on one visible screen. Details and contract impact: `docs/CONTRACT_CHANGE.md`.
+
 **Après l'étape 6**, l'app termine l'activation :
 1. calcul de l'adresse du wallet et vérification de la clé publique commune ;
 2. **preuve de propriété** : le client signe le message « I confirm I own the wallet [address]. Client [sq_ref]. [date]. » (signature P1+P2 sous politique AUTO) ; `sq-mock` vérifie la signature et enregistre le lien adresse ↔ client (annexe A.3) ;

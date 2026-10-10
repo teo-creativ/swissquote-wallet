@@ -52,9 +52,9 @@ Button (primary / secondary / dark / ghost, icon, loading, disabled = brand-soft
 | Welcome back (login) | C1 | F.2 title "Sign in with your Swissquote account", button "Sign in", pill "Simulated Swissquote login", link "I've lost access to my wallet" (to C17) |
 | (none) | C2 | Identity check steps with StepList |
 | "Only you have control over your funds" | C3 | The sentence is inaccurate for a 2-of-3 model. Use "Before we start". Four separate **unchecked** checkboxes (the mockup shows pre-selected radios and a duplicated line), "Read" chips open C20. Continue disabled until all four ticked |
-| Create a phone key | C4 | Keep the mockup title ("Create a phone key") and body, add the F.2 sentence that the key never leaves the phone. No-PRF error state |
-| Invite your lawyer (+ sheet with link) | C5 | "Secondary aggregator" becomes "Your lawyer". Sheet: link field, dark "Copy the invitation", share icon, Continue. Status "Waiting for your lawyer…" / "Your lawyer accepted." |
-| Account being created (3 rows) | C5 waiting + C6 | C6 uses the same row style with the 7 steps of F.2. Fix the typo "inizialized" |
+| Create a phone key | C4 | **Comes after C5 (team decision).** Keep the mockup title ("Create a phone key") and body, add the F.2 sentence that the key never leaves the phone. No-PRF error state |
+| Invite your lawyer (+ sheet with link) | C5 | **Comes before C4 (team decision); Continue goes to C4.** In mock mode a dev button "Simulate lawyer accepting" (with a Simulated pill). "Secondary aggregator" becomes "Your lawyer". Sheet: link field, dark "Copy the invitation", share icon, Continue. Status "Waiting for your lawyer…" / "Your lawyer accepted." |
+| Account being created (3 rows) | C5 waiting + C6 | C6 shows THREE share cards ("You, on this phone", "Your lawyer", "Swissquote"; waiting / generating / stored, Simulated pill where simulated) above the 7 steps of F.2, then the wallet address with copy + Basescan link. Fix the typo "inizialized" |
 | Your account is ready | end of C6 | Button "Discover your wallet" |
 | Home | C7 | Hero shows the USDC balance. Delta pill ("3.46% this week") only if real data. Account Security rows: "Phone key", "Your lawyer". Recent transactions in USDC. The CHF 18'165.00 of the mockup is the mock bank balance: it belongs on C13 |
 | Transfer sheet | C12 / C8 / C13 | Receive, Send, Deposit = "From Swissquote" |

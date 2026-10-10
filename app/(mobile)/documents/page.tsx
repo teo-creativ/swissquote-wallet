@@ -36,7 +36,7 @@ function Documents() {
     setLoading(true);
     try {
       await registerAccount(DOCUMENTS.map((d) => ({ document: d.id, version: VERSION })));
-      router.push("/key");
+      router.push("/lawyer");
     } catch (e) {
       setError(messageOf(e));
       setLoading(false);

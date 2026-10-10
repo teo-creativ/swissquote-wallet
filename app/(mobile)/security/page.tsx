@@ -13,6 +13,7 @@ import { when } from "../_lib/ActivityRow";
 import { downloadBlob } from "../_lib/download";
 import { isNotAuthenticated, messageOf } from "../_lib/errors";
 import { shortAddress } from "../_lib/send";
+import { getProtectionLevel } from "@/lib/passkey/webauthn";
 
 const MIN_PASSPHRASE = 12; // CDC 6.4
 
@@ -40,6 +41,8 @@ function Security({ initial }: { initial: Account }) {
   const [account, setAccount] = useState(initial);
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [reduced, setReduced] = useState(false);
+  useEffect(() => setReduced(getProtectionLevel() === "reduced"), []);
 
   const [revoking, setRevoking] = useState<Device | null>(null);
   const [revokeBusy, setRevokeBusy] = useState(false);
@@ -122,7 +125,7 @@ function Security({ initial }: { initial: Account }) {
             leading={<Smartphone size={20} strokeWidth={1.75} />}
             title={d.label}
             subtitle={`Added ${when(d.createdAt)}`}
-            trailing={d.current ? <StatusChip status="verified">This phone</StatusChip> : <Button variant="secondary" fullWidth={false} className="min-h-11 px-4 text-base" onClick={() => setRevoking(d)}>Remove</Button>}
+            trailing={d.current ? (reduced ? <StatusChip status="warning">Reduced protection</StatusChip> : <StatusChip status="verified">This phone</StatusChip>) : <Button variant="secondary" fullWidth={false} className="min-h-11 px-4 text-base" onClick={() => setRevoking(d)}>Remove</Button>}
           />
         ))}
       </Section>
