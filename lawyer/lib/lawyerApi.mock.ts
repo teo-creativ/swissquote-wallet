@@ -245,7 +245,9 @@ const policyOf = (clientId: string) => {
 export async function inspectInvitation(token: string) {
   await read();
   // The mock accepts any token except "expired" and "used", so every L1 state can be reached.
-  if (!token || token === "expired" || token === "used") return { valid: false, clientDisplayName: "", expiresAt: iso(Date.now()) };
+  // An invalid invitation still reports its expiry date: in the past when expired, in the future when already used.
+  if (!token || token === "expired") return { valid: false, clientDisplayName: "Léa Martin", expiresAt: iso(Date.now() - DAY) };
+  if (token === "used") return { valid: false, clientDisplayName: "Léa Martin", expiresAt: iso(Date.now() + 3 * DAY) };
   return { valid: true, clientDisplayName: "Léa Martin", expiresAt: iso(Date.now() + 7 * DAY) };
 }
 

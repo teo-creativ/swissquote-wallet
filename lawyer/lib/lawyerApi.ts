@@ -4,9 +4,12 @@
 import * as mock from "./lawyerApi.mock";
 import type { ClientView, JournalView, PolicyEdit, RequestDetail, RequestStatus, RequestSummary } from "./lawyerApi.types";
 import { LawyerApiError } from "./lawyerApi.types";
+import { loginLawyer, registerLawyer } from "./passkey";
 export * from "./lawyerApi.types";
 
 const MODE = process.env.NEXT_PUBLIC_LAWYER_MODE ?? "mock";
+/** True while everything runs on the in-memory mock. Screens use it to show the "Simulated" note. */
+export const IS_MOCK = MODE === "mock";
 
 function impl(): typeof mock {
   if (MODE === "mock") return mock;
@@ -17,10 +20,11 @@ export function inspectInvitation(token: string): Promise<{ valid: boolean; clie
   return impl().inspectInvitation(token);
 }
 export function acceptInvitation(token: string, i: { displayName: string; firm: string }): Promise<void> {
-  return impl().acceptInvitation(token, i); // creates the passkey
+  // Creates the passkey. Live mode uses the real WebAuthn ceremony (lib/passkey.ts).
+  return MODE === "live" ? registerLawyer(token, i) : impl().acceptInvitation(token, i);
 }
 export function login(): Promise<void> {
-  return impl().login();
+  return MODE === "live" ? loginLawyer() : impl().login();
 }
 export function getMe(): Promise<{ displayName: string; clients: number; pendingRequests: number }> {
   return impl().getMe();

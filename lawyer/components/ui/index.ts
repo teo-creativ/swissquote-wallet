@@ -1,6 +1,7 @@
 export { Banner } from "./Banner";
 export { Button } from "./Button";
 export { Card } from "./Card";
+export { Checkbox } from "./Checkbox";
 export { CopyField } from "./CopyField";
 export { Countdown } from "./Countdown";
 export { Dialog } from "./Dialog";
