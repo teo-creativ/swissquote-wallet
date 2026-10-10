@@ -64,6 +64,14 @@ describe("mock onboarding", () => {
     expect((await settle(api.getLawyerStatus())).status).toBe("accepted");
   });
 
+  it("fails with PRF_NOT_SUPPORTED when the phone has no passkey support", async () => {
+    setMockPanel({ prfSupported: false });
+    await settle(api.loginSwissquote("client.lea", "demo1234"));
+    const err = await settle(api.createDevicePasskey("My phone").catch((e) => e));
+    expect(err.code).toBe("PRF_NOT_SUPPORTED");
+    setMockPanel({ prfSupported: true });
+  });
+
   it("requires all four consents", async () => {
     await settle(api.loginSwissquote("client.lea", "demo1234"));
     const err = await settle(api.registerAccount([{ document: "terms", version: "1" }]).catch((e) => e));

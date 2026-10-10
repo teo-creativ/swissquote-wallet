@@ -67,6 +67,7 @@ export function MockPanel() {
       <Section title="Switches">
         <Switch label="Auto lawyer" hint="The simulated lawyer accepts and approves after 8 s." checked={snap.panel.autoLawyer} onChange={(v) => act(() => setMockPanel({ autoLawyer: v }))()} />
         <Switch label="Identity check passes" hint="Result of the simulated identity check in recovery." checked={snap.panel.identityPass} onChange={(v) => act(() => setMockPanel({ identityPass: v }))()} />
+        <Switch label="Phone supports passkeys" hint="Off: the phone key step fails with the no-PRF error." checked={snap.panel.prfSupported !== false} onChange={(v) => act(() => setMockPanel({ prfSupported: v }))()} />
       </Section>
 
       <Section title="State">

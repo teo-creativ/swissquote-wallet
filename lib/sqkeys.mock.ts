@@ -89,6 +89,8 @@ export interface MockPanel {
   autoLawyer: boolean;
   /** Result of the simulated identity check during recovery. */
   identityPass: boolean;
+  /** false: createDevicePasskey fails as on a phone without passkey PRF support (CDC 4.4). Missing = true. */
+  prfSupported?: boolean;
 }
 
 function initialState(panel: MockPanel = { autoLawyer: true, identityPass: true }): MockState {
@@ -436,6 +438,7 @@ export async function registerAccount(consents: { document: "terms" | "risk" | "
 export async function createDevicePasskey(label: string): Promise<Device> {
   const s = requireAuth();
   await sleep(800, 1400);
+  if (s.panel.prfSupported === false) throw new SqKeysError("PRF_NOT_SUPPORTED", "This phone cannot protect your key with a passkey. Try another phone or browser.");
   if (!label.trim()) throw new SqKeysError("INVALID_LABEL", "Give this phone a name.");
   const device: Device = { id: newId("dev"), label: label.trim(), createdAt: iso(Date.now()), current: true };
   s.devices = [...s.devices.map((d) => ({ ...d, current: false })), device];

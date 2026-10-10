@@ -19,11 +19,13 @@ type StatusChipProps = {
   children?: string;
   /** Makes the chip a button (e.g. "Read" opens the legal text). The touch target grows to 44px. */
   onClick?: () => void;
+  /** Accessible name when several chips share the same text (e.g. "Read the Risk warning"). */
+  ariaLabel?: string;
   className?: string;
 };
 
 /** Icon + text on every chip: status is never conveyed by color alone. */
-export function StatusChip({ status, children, onClick, className = "" }: StatusChipProps) {
+export function StatusChip({ status, children, onClick, ariaLabel, className = "" }: StatusChipProps) {
   const { label, look, icon } = config[status];
   const base = `inline-flex h-6 shrink-0 items-center gap-1 rounded-pill px-2.5 text-[11px] font-medium leading-[14px] ${look} ${className}`;
   const content = (
@@ -37,6 +39,7 @@ export function StatusChip({ status, children, onClick, className = "" }: Status
       <button
         type="button"
         onClick={onClick}
+        aria-label={ariaLabel}
         className={`${base} relative before:absolute before:-inset-2.5 before:content-['']`}
       >
         {content}
