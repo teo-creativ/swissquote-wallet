@@ -89,3 +89,6 @@ Project settings: Framework Next.js, Node 22, root directory `.`; the build comm
 npm run typecheck && npm test && npm run build
 npm run check-shared && npm run check-secrets && npm run test:e2e
 ```
+
+## 8. Public URLs between the sites
+The client app builds the lawyer invitation link from `NEXT_PUBLIC_LAWYER_URL` (a public URL, not a secret). Local dev: `http://localhost:3001` (already in `.env.example`). Vercel (`sq-keys` project, Production): `npx vercel env add NEXT_PUBLIC_LAWYER_URL production` with the real portal URL, then `npx vercel --prod` (it is inlined at build time). The localhost fallback only exists under `next dev`; a production build without the variable shows "The lawyer portal address is not set up" on the invite screen instead of a broken link. The lawyer portal builds no links to the client today; if it ever does, use `NEXT_PUBLIC_APP_URL` the same way.
