@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import * as api from "./lawyerApi";
 import { resetMock } from "./lawyerApi.mock";
+import { LAWYER_TERMS_VERSION } from "./legal";
 
 // Every call waits on timers (read latency, simulated passkey prompt): run them with fake time.
 async function done<T>(promise: Promise<T>): Promise<T> {
@@ -168,5 +169,19 @@ describe("invitation", () => {
   it("accepts any token except expired and used", async () => {
     expect((await done(api.inspectInvitation("abc"))).valid).toBe(true);
     expect((await done(api.inspectInvitation("expired"))).valid).toBe(false);
+  });
+});
+
+describe("lawyer consent", () => {
+  it("records the terms version and an ISO UTC time when the account is created", async () => {
+    await done(api.acceptInvitation("valid", { displayName: "Maître Test", firm: "Test & Co", consent: { termsVersion: LAWYER_TERMS_VERSION } }));
+    const me = await done(api.getMe());
+    expect(me.consent?.termsVersion).toBe(LAWYER_TERMS_VERSION);
+    expect(me.consent?.acceptedAt).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
+  });
+
+  it("refuses an account created without the consent", async () => {
+    const err = await done(api.acceptInvitation("valid", { displayName: "Maître Test", firm: "Test & Co" })).catch((e: unknown) => e);
+    expect((err as { code: string }).code).toBe("CONSENT_REQUIRED");
   });
 });

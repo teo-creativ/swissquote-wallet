@@ -87,5 +87,5 @@ Project settings: Framework Next.js, Node 22, root directory `.`; the build comm
 ## 7. Before every commit
 ```bash
 npm run typecheck && npm test && npm run build
-npm run check-shared && npm run check-secrets
+npm run check-shared && npm run check-secrets && npm run test:e2e
 ```

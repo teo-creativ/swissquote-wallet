@@ -7,9 +7,9 @@
 
 | | URL | Status |
 |---|---|---|
-| Client app | https://sq-keys.vercel.app | `[TO VERIFY]` deployment may be older than this branch |
+| Client app | https://sq-keys-iota.vercel.app | `[TO VERIFY]` deployment may be older than this branch |
 | Lawyer portal (and P2 node, planned) | https://sq-keys-lawyer.vercel.app | `[TO VERIFY]` same |
-| Swissquote console (inside the client app) | https://sq-keys.vercel.app/console | `[TO VERIFY]` password gate is real, data is seeded |
+| Swissquote console (inside the client app) | https://sq-keys-iota.vercel.app/console | `[TO VERIFY]` password gate is real, data is seeded |
 | Swissquote mock service and P3 node | `sq-keys-mock` (Vercel) | **Not built yet**, see section 3 |
 | Source | https://github.com/teo-creativ/swissquote-wallet | |
 
@@ -67,7 +67,7 @@ This table describes the code on branch `teo/ui`. `[TO VERIFY]` by Aaron and Th�
 | Swissquote login, KYC, selfie, bank balance | **Simulated** by design (single demo client) | `lib/sqkeys.mock.ts` | Sign in |
 | `sq-mock/` service and P3 node | **Not built** | `sq-mock/` (SQL schema and constants only) | n/a |
 | Database | **Not used**: three Supabase schemas written, nothing reads or writes them | `sql/`, `lawyer/sql/`, `sq-mock/sql/` | grep for `supabase` in app code |
-| Legal documents (terms, risk, recovery, privacy, cookies, notice) | **Real** text, English, Swiss law framing; consents are not stored | `content/legal/` | `/legal/terms` |
+| Legal documents (terms, risk, recovery, privacy, cookies, notice) | **Real** text, English, Swiss law framing; in mock mode the acceptance time and version are stored | `content/legal/` | `/legal/terms` |
 | Secret scanning | **Real** | `scripts/check-secrets.sh` | `npm run check-secrets` |
 
 ---
@@ -246,13 +246,7 @@ Prepared by students from public texts; **not legal advice**. Statuses follow CD
 - **Data protection.** Biometrics never leave the device. The KYC selfie would be sensitive data requiring consent and an impact assessment; simulated here, nothing stored. The lawyer sees a display name, the address and request history, never the Swissquote client number. The blockchain is public and cannot be erased, which the privacy policy states.
 - **Bank secrecy and outsourcing.** The address-to-client link lives only in sq-mock. Use of Vercel and Supabase as processors, and the lawyer's node as an outsourced function, need qualification `[TO VERIFY]`.
 
-Third-party services:
-
-| Service | Used for | Data | Country / region |
-|---|---|---|---|
-| Vercel | Hosting (functions region `fra1`) | IPs, requests | `[TO VERIFY]` |
-| Supabase | Databases (planned; not used by code yet) | account, share ciphertext | Frankfurt (planned) |
-| Public Base Sepolia RPC | Chain reads and broadcasts (planned) | addresses | `[TO VERIFY]` |
+Third-party services and libraries (provider, role, data, country, terms): [`docs/THIRD_PARTIES.md`](docs/THIRD_PARTIES.md). Unknown countries are marked `[TO VERIFY]`. Licence notices: [`NOTICE`](NOTICE).
 
 20-point compliance checklist (consents unticked by default, no dark patterns, no hidden fees, no invented testimonials, no unproven claims): see CDC 9.9. The product never says "unbreakable", "100% secure" or "FINMA compliant". The Swissquote logo is used only from `public/brand/swissquote-logo.svg` (team decision).
 
@@ -321,7 +315,7 @@ Three Vercel projects and three Supabase projects, one per party, so that the se
 | `lawyer/` | `sq-keys-lawyer` | `sq-keys-lawyer` | Téo |
 | `sq-mock/` | `sq-keys-mock` | `sq-keys-mock` | Théotime |
 
-Region: Vercel functions `fra1` (`vercel.json`), Supabase Frankfurt. Deploy from each folder with `npx vercel --prod`; project names matter because passkeys are bound to the domain (`sq-keys.vercel.app`, `sq-keys-lawyer.vercel.app`). `NEXT_PUBLIC_*` variables are inlined at build time, so changing them requires a new deploy.
+Region: Vercel functions `fra1` (`vercel.json`), Supabase Frankfurt. Deploy from each folder with `npx vercel --prod`; project names matter because passkeys are bound to the domain (`sq-keys-iota.vercel.app`, `sq-keys-lawyer.vercel.app`). `NEXT_PUBLIC_*` variables are inlined at build time, so changing them requires a new deploy.
 
 Variables per project (names only; see CDC annex C):
 - **Client app:** `NEXT_PUBLIC_CHAIN_ID`, `NEXT_PUBLIC_EXPLORER_URL`, `NEXT_PUBLIC_SQKEYS_MODE`, `RPC_URL`, `USDC_ADDRESS`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `SESSION_SECRET`, `LAWYER_URL`, `SQ_URL`, `APP_TO_LAWYER_SECRET`, `APP_TO_SQ_SECRET`, `ALLOW_NO_PRF`, `EMERGENCY_PATH_ENABLED`, `CONSOLE_PASSWORD`.
@@ -397,9 +391,9 @@ sq-mock/           Swissquote mock + P3       Vercel: sq-keys-mock       (schema
 exit/              exit script                                          (README only)
 shared/            source of shared code, copied by `npm run sync-shared`
 sql/ lawyer/sql/ sq-mock/sql/   database schemas with RLS (unused by code today)
-docs/              CDC_v3.1.md, CONTRACT_CHANGE.md, SETUP.md, AUDIT.md, screenshots/
+docs/              CDC_v3.1.md, CONTRACT_CHANGE.md, SETUP.md, AUDIT.md, THIRD_PARTIES.md, LEGAL_TO_VERIFY.md, screenshots/
 ```
 
 Key documents: `docs/CDC_v3.1.md` (specification, in French), `docs/CONTRACT_CHANGE.md` (proposals for the front/logic contract), `docs/AUDIT.md` (what is mocked), `design.md`, `CLAUDE.md`.
 
-**Licences.** The MPC packages `@silencelaboratories/dkls-wasm-ll-web` and `-node` (1.2.0, DKLs23 / Silent Shard) are under the **Silence Laboratories Non-Commercial Use License Agreement**. Commercial use needs a commercial licence from Silence Laboratories. See [`NOTICE`](NOTICE). Other dependencies are open-source packages pinned to exact versions in `package.json`. This repository has no `LICENSE` file yet `[TEAM TO DECIDE]`.
+**Licences.** The MPC packages `@silencelaboratories/dkls-wasm-ll-web` and `-node` (1.2.0, DKLs23 / Silent Shard) are under the **Silence Laboratories Non-Commercial Use License Agreement**. Commercial use needs a commercial licence from Silence Laboratories. See [`NOTICE`](NOTICE) for the required notice and [`licenses/`](licenses/) for the full licence text, and [`docs/THIRD_PARTIES.md`](docs/THIRD_PARTIES.md) for the services. Other dependencies are open-source packages pinned to exact versions in `package.json`. This repository has no `LICENSE` file yet `[TEAM TO DECIDE]`.

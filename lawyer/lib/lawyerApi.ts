@@ -19,14 +19,14 @@ function impl(): typeof mock {
 export function inspectInvitation(token: string): Promise<{ valid: boolean; clientDisplayName: string; expiresAt: string }> {
   return impl().inspectInvitation(token);
 }
-export function acceptInvitation(token: string, i: { displayName: string; firm: string }): Promise<void> {
+export function acceptInvitation(token: string, i: { displayName: string; firm: string; consent?: { termsVersion: string } }): Promise<void> {
   // Creates the passkey. Live mode uses the real WebAuthn ceremony (lib/passkey.ts).
   return MODE === "live" ? registerLawyer(token, i) : impl().acceptInvitation(token, i);
 }
 export function login(): Promise<void> {
   return MODE === "live" ? loginLawyer() : impl().login();
 }
-export function getMe(): Promise<{ displayName: string; clients: number; pendingRequests: number }> {
+export function getMe(): Promise<{ displayName: string; clients: number; pendingRequests: number; consent?: { termsVersion: string; acceptedAt: string } }> {
   return impl().getMe();
 }
 export function getClients(): Promise<ClientView[]> {

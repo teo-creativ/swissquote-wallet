@@ -1,6 +1,10 @@
 // L10 legal pages: the "Lawyer information" of CDC 9.8 (role, no power over funds alone, data processed, journal).
 // Written by students from public sources, not reviewed by a lawyer.
 // Keep to what the prototype really does: no claim of absolute security, no regulator named as an authority.
+// Statements that are not verified yet are NOT shown here: they live in docs/LEGAL_TO_VERIFY.md.
+
+/** Version of the lawyer role and data documents the lawyer confirms when creating the account. */
+export const LAWYER_TERMS_VERSION = "1.0";
 
 export type LegalDoc = {
   slug: string;
@@ -21,6 +25,7 @@ A client invited you to protect their wallet. You are free to accept or to decli
 
 ## What you do
 - You hold one third of the client's key. Two of the three parts are needed to sign, so **you can never move funds alone**.
+- You choose to accept the role. You hold the authority to approve, not the funds.
 - You approve or decline large or unusual transfers, recoveries and exits.
 - You set the client's limits: per transfer, per day, transfers per hour and per day, and the known recipients.
 - Each approval applies to one exact request, with its amount and recipient. It is signed with your passkey and can be used once.
@@ -46,6 +51,12 @@ A client invited you to protect their wallet. You are free to accept or to decli
 ## Your professional duties
 This portal does not tell you which professional or regulatory rules apply to you in this role. In a real product, your status under anti-money laundering rules and your duty of professional secrecy would have to be assessed before you accept. This has not been done for this prototype.
 
+## Recovery and independence
+If a client loses their phone, your approval is one of the checks before a new key is created. The others are an identity check by Swissquote, a waiting period during which the client can cancel, a verifiable journal, and alerts to the client. Your approval only protects the client if you are independent from Swissquote: the risk that remains is two independent professionals acting together against the client.
+
+## Your own obligations
+Depending on the country and the profession, a lawyer or notary who takes part in controlling client funds may have obligations of their own, for example under anti-money-laundering rules or professional secrecy. This prototype does not assess them for you. Check them with your professional body before acting for a real client.
+
 ## About this prototype
 This is a student prototype. It is not an official Swissquote product. It runs on a test network with no real funds. In this demo the lawyer is played by a team member.
 `,
@@ -58,12 +69,14 @@ This is a student prototype. It is not an official Swissquote product. It runs o
 ## About you
 - Your name and firm.
 - Your passkey: the public key and a usage counter. Your biometric data never leaves your device.
+- The time you confirmed the role and data documents, and their version.
 
 ## About your clients
 - Display name, wallet address and account status. The client chose to share them with you when they invited you.
 - Each request that needs you: type, amount, recipient address, the reasons it needs you, and the time.
 - Your decision on each request, with a hash of the passkey signature as proof.
 - The client's policy and each version of it.
+- Nothing else: no Swissquote client number, no identity documents, no selfie. The portal only knows a pseudonymous reference.
 
 ## What the portal does not receive
 - The client's Swissquote client number and identity documents. The portal only knows an anonymous reference.
@@ -81,6 +94,9 @@ You process personal data of your client when you use this portal. Use it only f
 ## Technical data
 - A session cookie, strictly necessary to keep you signed in.
 - Requests to look up an invitation are rate limited by network address.
+
+## Service providers
+The portal runs on hosting and database services. They see technical data such as network addresses, and the data listed above. They are named in the project's third-party table.
 `,
   },
   {

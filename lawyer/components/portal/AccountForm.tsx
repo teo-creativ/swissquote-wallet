@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { CircleAlert, Fingerprint } from "lucide-react";
 import { Button, Checkbox, Input, SimulatedPill, Spinner } from "@/components/ui";
 import { IS_MOCK, acceptInvitation } from "@/lib/lawyerApi";
+import { LAWYER_TERMS_VERSION } from "@/lib/legal";
 import { AuthBody, AuthHero } from "./AuthCard";
 import { InvitationProblem } from "./InvitationProblem";
 import { useInvitation } from "./useInvitation";
@@ -44,7 +45,7 @@ export function AccountForm({ token }: { token: string }) {
 
     setBusy(true);
     try {
-      await acceptInvitation(token, { displayName: name.trim(), firm: firm.trim() });
+      await acceptInvitation(token, { displayName: name.trim(), firm: firm.trim(), consent: { termsVersion: LAWYER_TERMS_VERSION } });
       router.push("/");
     } catch (e) {
       setFailure(e instanceof Error && e.message ? e.message : "Something went wrong. Try again.");
@@ -96,7 +97,7 @@ export function AccountForm({ token }: { token: string }) {
             </p>
           )}
 
-          <Button type="submit" loading={busy} icon={<Fingerprint size={22} strokeWidth={1.75} aria-hidden="true" />}>
+          <Button type="submit" loading={busy} disabled={!consent} icon={<Fingerprint size={22} strokeWidth={1.75} aria-hidden="true" />}>
             Create passkey and accept
           </Button>
         </AuthBody>

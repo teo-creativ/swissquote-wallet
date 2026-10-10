@@ -1,2 +1,74 @@
-This prototype uses @silencelaboratories/dkls-wasm-ll-web and -node 1.2.0 (DKLs23 / Silent Shard) under the Silence Laboratories Non-Commercial Use License Agreement (SLL).
-Commercial use requires a commercial license from Silence Laboratories. See CDC 9.7. Final text: Aaron.
+SQ Keys: third-party notices
+
+SQ Keys is a student prototype (BSA x EPFL hackathon, Swissquote track). It is not an official Swissquote product.
+
+================================================================================
+Silence Laboratories DKLs23 library (MPC)
+================================================================================
+
+Packages:   @silencelaboratories/dkls-wasm-ll-web  1.2.0   (client app)
+            @silencelaboratories/dkls-wasm-ll-node 1.2.0   (lawyer portal)
+Owner:      Silence Laboratories Pte. Ltd. (Singapore, UEN 201938700D)
+Licence:    "Silence Laboratories' Non-Commercial Use License Agreement"
+            (package.json field "license": "SLL"), last modified 12-02-2024.
+Full text:  licenses/SILENCE-LABORATORIES-LICENSE.md (an unmodified copy of the
+            LICENSE.md shipped in both packages; the two copies are identical).
+
+Notice required by the licence (section 1.1.c.iii):
+
+  The Silence Laboratories DKLs23 software libraries used in this project
+  (@silencelaboratories/dkls-wasm-ll-web and @silencelaboratories/dkls-wasm-ll-node)
+  are licensed under the Silence Laboratories License Agreement,
+  Copyright © Silence Laboratories Pte. Ltd. All Rights Reserved.
+
+This project uses the Library. The Library files are installed from npm at the
+exact version above and are not modified by this project.
+
+What the licence says about use (section 9, quoted):
+
+  "Non-Commercial Use means your use of the Library as described below, as
+  determined by Silence Laboratories in its sole discretion, for:
+  a. personal use for research, experiments, personal study, educational
+  purposes, private entertainment, personal projects or amateur pursuits;
+  b. use by any charitable organization, educational institution, public
+  research organization, public safety or health organization, environmental
+  protection organization or government institution,
+  in each case, i.e., (1) and (2), without anticipated commercial application.
+  For the sake of clarity, modifying and/or creating a substitute for the
+  Library, or any other use of the Library, for commercial gain, including by
+  way of (a) using the Library for internal business purposes, or (b) resale or
+  distribution for commercial purposes, shall not constitute Non-Commercial Use."
+
+Silence Laboratories' contact for other uses, as given in the licence:
+info@silencelaboratories.com
+
+Consequences for this project:
+- The licence requires every Resulting Program to carry the same notice and the
+  same Non-Commercial Use restrictions (section 1.1.d), and to make its source
+  code publicly available or available on request (section 1.1.e).
+- Any commercial use needs a commercial licence from Silence Laboratories, or a
+  different library. See docs/CDC_v3.1.md section 9.7.
+- [TO VERIFY] Whether the source of this repository is public, or will be made
+  available on request, as section 1.1.e requires.
+
+Disclaimer from the licence (section "DISCLAIMER", quoted):
+
+  THIS LIBRARY IS PROVIDED BY THE COPYRIGHT HOLDER AND CONTRIBUTORS "AS IS" AND
+  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+  FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+  DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+  OF THIS PROGRAM, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+================================================================================
+Other dependencies
+================================================================================
+
+All other dependencies are open-source packages pinned to exact versions in
+package.json (MIT, ISC, Apache-2.0, and OFL-1.1 for the Outfit and Poppins
+fonts). Their licences are in each package under node_modules. The services
+this project talks to are listed in docs/THIRD_PARTIES.md.
