@@ -64,6 +64,17 @@ export function AccountForm({ token }: { token: string }) {
             <Checkbox checked={consent} onChange={(e) => { setConsent(e.target.checked); setErrors((x) => ({ ...x, consent: undefined })); }} aria-describedby={errors.consent ? "consent-error" : undefined}>
               I understand the role and the data I will process.
             </Checkbox>
+            <p className="pl-8 text-xs text-muted">
+              Read{" "}
+              <a href="/legal/role" target="_blank" rel="noopener" className="underline">
+                your role
+              </a>{" "}
+              and{" "}
+              <a href="/legal/data" target="_blank" rel="noopener" className="underline">
+                the data we process
+              </a>{" "}
+              (opens in a new tab).
+            </p>
             {errors.consent && (
               <p id="consent-error" className="mt-1 flex items-start gap-1.5 text-sm font-medium text-danger">
                 <CircleAlert size={16} strokeWidth={1.75} className="mt-0.5 shrink-0" aria-hidden="true" />

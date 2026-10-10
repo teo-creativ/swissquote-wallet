@@ -1,5 +1,15 @@
 import { describe, expect, it } from "vitest";
-import { formatAge, formatDate, formatDateTime, formatTime, formatUpdated, shortAddress, shortHash } from "./format";
+import {
+  autoTotalsLine,
+  formatAge,
+  formatDate,
+  formatDateTime,
+  formatTime,
+  formatUpdated,
+  integrityLabel,
+  shortAddress,
+  shortHash,
+} from "./format";
 
 const NOW = Date.parse("2026-10-10T12:00:00Z");
 const ago = (seconds: number) => new Date(NOW - seconds * 1000).toISOString();
@@ -40,5 +50,15 @@ describe("date and time", () => {
     expect(formatDate(iso, "UTC")).toBe("10 Oct 2026");
     expect(formatTime(iso, "UTC")).toBe("15:22:14");
     expect(formatDateTime(iso, "UTC")).toBe("10 Oct 2026, 15:22");
+  });
+});
+
+describe("annex F.6 journal texts", () => {
+  it("prints the integrity badge exactly", () => {
+    expect(integrityLabel({ ok: true })).toBe("Journal integrity: OK");
+    expect(integrityLabel({ ok: false, firstFailure: "7" })).toBe("Journal integrity: FAILED at entry 7");
+  });
+  it("prints the automatic totals line exactly", () => {
+    expect(autoTotalsLine({ count: 14, totalUsdc: "37.00" })).toBe("Automatic decisions in the last 24 hours: 14, total 37.00 USDC");
   });
 });

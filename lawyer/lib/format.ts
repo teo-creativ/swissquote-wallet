@@ -46,3 +46,13 @@ export function formatDateTime(iso: string, timeZone?: string): string {
   const t = new Date(iso).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone });
   return `${formatDate(iso, timeZone)}, ${t}`;
 }
+
+/** Annex F.6, exact wording. `firstFailure` is the entry that broke the chain. */
+export function integrityLabel(integrity: { ok: boolean; firstFailure?: string }): string {
+  return integrity.ok ? "Journal integrity: OK" : `Journal integrity: FAILED at entry ${integrity.firstFailure ?? "unknown"}`;
+}
+
+/** Annex F.6, exact wording. Totals only, never detail rows (CDC 7.1). */
+export function autoTotalsLine(totals: { count: number; totalUsdc: string }): string {
+  return `Automatic decisions in the last 24 hours: ${totals.count}, total ${totals.totalUsdc} USDC`;
+}

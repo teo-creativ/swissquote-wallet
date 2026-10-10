@@ -1,4 +1,4 @@
-import type { ReasonCode, RequestKind, RequestStatus } from "./lawyerApi.types";
+import type { JournalEntryType, ReasonCode, RequestKind, RequestStatus } from "./lawyerApi.types";
 
 /**
  * Why a request reached the lawyer, in the lawyer's voice. Annex F.3 only fixes the client-facing wording,
@@ -30,3 +30,15 @@ export const STATUS_FILTERS: { status: RequestStatus; label: string; empty: stri
   { status: "refused", label: "Refused", empty: "No refused requests." },
   { status: "expired", label: "Expired", empty: "No expired requests." },
 ];
+
+export const JOURNAL_TYPE_LABEL: Record<JournalEntryType, string> = {
+  LAWYER_DECIDED: "Decision",
+  POLICY_CHANGED: "Policy change",
+  RECIPIENT_ADDED: "Recipient added",
+  RECIPIENT_REVOKED: "Recipient revoked",
+  RECOVERY_REQUESTED: "Recovery requested",
+  RECOVERY_DECIDED: "Recovery decision",
+  EXIT_REQUESTED: "Exit requested",
+  EXIT_DECIDED: "Exit decision",
+  LOGIN: "Access",
+};

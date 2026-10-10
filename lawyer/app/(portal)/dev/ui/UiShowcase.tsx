@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import type { ReactNode } from "react";
 import { Inbox, Lock, ShieldCheck } from "lucide-react";
@@ -45,6 +46,23 @@ function Block({ title, children }: { title: string; children: ReactNode }) {
   );
 }
 
+// Every screen of the portal on the mock data (ids come from the seed in lib/lawyerApi.mock.ts).
+const SCREENS = [
+  { id: "L1", name: "Invitation", href: "/invite/demo-token" },
+  { id: "L1", name: "Invitation, expired", href: "/invite/expired" },
+  { id: "L1", name: "Invitation, already used", href: "/invite/used" },
+  { id: "L2", name: "Account and passkey", href: "/invite/demo-token/account" },
+  { id: "L3", name: "Login", href: "/login" },
+  { id: "L4", name: "Dashboard", href: "/" },
+  { id: "L5", name: "Requests", href: "/requests" },
+  { id: "L6", name: "Transfer request", href: "/requests/req_01" },
+  { id: "L7", name: "Recovery request", href: "/requests/req_03" },
+  { id: "L7", name: "Exit request", href: "/requests/req_04" },
+  { id: "L8", name: "Client policy", href: "/clients/client.lea/policy" },
+  { id: "L9", name: "Journal", href: "/journal" },
+  { id: "L10", name: "Legal", href: "/legal" },
+];
+
 export function UiShowcase() {
   const [open, setOpen] = useState(false);
   const [endsAt] = useState(() => Date.now() + 160_000);
@@ -55,6 +73,19 @@ export function UiShowcase() {
         <h1 className="text-[28px] font-semibold leading-9 text-ink">UI kit</h1>
         <p className="mt-1 text-sm text-muted">Primitives copied from the client design language. Development page.</p>
       </div>
+
+      <Card title="All screens (mock data)">
+        <ul className="grid gap-x-6 sm:grid-cols-2">
+          {SCREENS.map((sc) => (
+            <li key={sc.href}>
+              <Link href={sc.href} className="flex min-h-11 items-center gap-3 text-sm text-ink">
+                <span className="w-9 shrink-0 font-medium text-warn">{sc.id}</span>
+                {sc.name}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </Card>
 
       <div className="grid gap-4 sm:grid-cols-3">
         <Stat label="Pending requests" value={2} note="waiting for you" icon={<Inbox size={20} strokeWidth={1.75} />} />

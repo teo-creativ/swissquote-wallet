@@ -21,13 +21,17 @@ type StatusChipProps = {
   children?: string;
   /** Makes the chip a button (e.g. "Read" opens the legal text). The touch target grows to 44px. */
   onClick?: () => void;
+  /** "md" for a chip that carries the main message of a card, e.g. the journal integrity badge. */
+  size?: "sm" | "md";
   className?: string;
 };
 
+const dims = { sm: "h-6 px-2.5 text-[11px] leading-[14px]", md: "h-8 px-3.5 text-sm leading-5" } as const;
+
 /** Icon + text on every chip: status is never conveyed by color alone. */
-export function StatusChip({ status, children, onClick, className = "" }: StatusChipProps) {
+export function StatusChip({ status, children, onClick, size = "sm", className = "" }: StatusChipProps) {
   const { label, look, icon } = config[status];
-  const base = `inline-flex h-6 shrink-0 items-center gap-1 rounded-pill px-2.5 text-[11px] font-medium leading-[14px] ${look} ${className}`;
+  const base = `inline-flex shrink-0 items-center gap-1 rounded-pill font-medium ${dims[size]} ${look} ${className}`;
   const content = (
     <>
       <span aria-hidden="true">{icon}</span>
