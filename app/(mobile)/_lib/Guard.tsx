@@ -4,35 +4,12 @@ import { useCallback, useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { getAccount } from "@/lib/sqkeys";
+import { isAllowed, redirectFor } from "@/lib/onboarding";
 import type { Account } from "@/lib/sqkeys";
 import { Banner, Button, PageShell, Spinner } from "@/components/ui";
 import { isNotAuthenticated, messageOf } from "./errors";
 
-/** Routes a signed-in account may be on, by status. The first one is where we send it. */
-export function routesFor(account: Account): string[] {
-  switch (account.status) {
-    case "created":
-      // The contract does not say how far C2-C4 went: a registered phone key means the next step is the lawyer.
-      return account.devices.length > 0 ? ["/lawyer"] : ["/verify", "/documents", "/key"];
-    case "awaiting_lawyer":
-      return ["/lawyer"];
-    case "ready_for_keys":
-    case "creating_wallet":
-      return ["/creating"];
-    default:
-      return ["/home"]; // active, recovering
-  }
-}
-
-export const entryRoute = (account: Account): string => routesFor(account)[0];
-
-const ONBOARDING = ["/verify", "/documents", "/key", "/lawyer", "/creating"];
-
-/** Onboarding routes follow the status steps; once the wallet exists (active, recovering) every other screen is open. */
-export function isAllowed(account: Account, route: string): boolean {
-  if (account.status === "active" || account.status === "recovering") return !ONBOARDING.includes(route);
-  return routesFor(account).includes(route);
-}
+export { entryRoute, isAllowed, routesFor } from "@/lib/onboarding";
 
 /** Checks the session and the account status once, on mount. Wrong step: redirect. Not signed in: /login. */
 export function Guard({ route, children }: { route: string; children: (account: Account) => ReactNode }) {
@@ -48,7 +25,7 @@ export function Guard({ route, children }: { route: string; children: (account: 
       (a) => {
         if (!alive) return;
         if (isAllowed(a, route)) setAccount(a);
-        else router.replace(entryRoute(a));
+        else router.replace(redirectFor(a, route));
       },
       (e: unknown) => {
         if (!alive) return;

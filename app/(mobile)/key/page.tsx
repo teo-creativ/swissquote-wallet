@@ -59,7 +59,7 @@ function Key() {
     try {
       await createDevicePasskey("This phone");
       setPhase("done");
-      router.push("/lawyer");
+      router.push("/creating");
     } catch (e) {
       if (isNotAuthenticated(e)) return router.replace("/login");
       setError(e instanceof SqKeysError ? PASSKEY_ERROR : GENERIC_ERROR);

@@ -2,20 +2,44 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, ExternalLink, Lock, Smartphone, User } from "lucide-react";
 import { createWallet } from "@/lib/sqkeys";
 import type { WalletStep } from "@/lib/sqkeys";
-import { Banner, Button, CheckHalo, PageShell, StepList } from "@/components/ui";
+import { isMockMode } from "@/lib/sqkeys.mode";
+import { shareStates } from "@/lib/onboarding";
+import type { ShareState } from "@/lib/onboarding";
+import { Banner, Button, CheckHalo, CopyField, PageShell, RowCard, SimulatedPill, Spinner, StatusChip, StepList } from "@/components/ui";
 import type { Step } from "@/components/ui/StepList";
 import { Guard } from "../_lib/Guard";
 import { STEPS } from "../_lib/walletSteps";
 import { isNotAuthenticated, messageOf } from "../_lib/errors";
 
-// C6. Labels: annex F.2 (see _lib/walletSteps).
+const BASESCAN = "https://sepolia.basescan.org/address/";
+
+function StateChip({ state }: { state: ShareState }) {
+  if (state === "stored") return <StatusChip status="verified">Stored</StatusChip>;
+  if (state === "generating") return <StatusChip status="info">Generating</StatusChip>;
+  return <StatusChip status="neutral">Waiting</StatusChip>;
+}
+
+function ShareCard({ icon, title, where, state, simulated }: { icon: React.ReactNode; title: string; where: string; state: ShareState; simulated: boolean }) {
+  return (
+    <div className="flex flex-col gap-2">
+      <RowCard leading={icon} title={title} subtitle={where} trailing={<StateChip state={state} />} />
+      {simulated && (
+        <div className="pl-1">
+          <SimulatedPill />
+        </div>
+      )}
+    </div>
+  );
+}
+
+// C6. Three shares are created together: one per card. Step labels: annex F.2 (see _lib/walletSteps).
 function Creating() {
   const router = useRouter();
   const [current, setCurrent] = useState<WalletStep | null>(null);
-  const [ready, setReady] = useState(false);
+  const [address, setAddress] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const started = useRef(false);
 
@@ -23,8 +47,8 @@ function Creating() {
     setError(null);
     setCurrent(null);
     try {
-      await createWallet(setCurrent);
-      setReady(true);
+      const { address } = await createWallet(setCurrent);
+      setAddress(address);
     } catch (e) {
       if (isNotAuthenticated(e)) return router.replace("/login");
       setError(messageOf(e));
@@ -37,7 +61,16 @@ function Creating() {
     void run();
   }, [run]);
 
-  if (ready) {
+  const states = shareStates(address ? "done" : current);
+  const cards = (
+    <div className="flex flex-col gap-3">
+      <ShareCard icon={<Smartphone size={20} strokeWidth={1.75} />} title="You, on this phone" where="Encrypted on this phone. Face ID unlocks it." state={states.client} simulated={isMockMode} />
+      <ShareCard icon={<User size={20} strokeWidth={1.75} />} title="Your lawyer" where="Kept on your lawyer's own server." state={states.lawyer} simulated />
+      <ShareCard icon={<Lock size={20} strokeWidth={1.75} />} title="Swissquote" where="Kept at Swissquote." state={states.swissquote} simulated />
+    </div>
+  );
+
+  if (address) {
     return (
       <PageShell
         footer={
@@ -46,9 +79,19 @@ function Creating() {
           </Button>
         }
       >
-        <div className="flex min-h-[60dvh] flex-col items-center justify-center gap-8 text-center">
+        <div className="mt-6 flex flex-col items-center gap-4 text-center">
           <CheckHalo size={64} />
           <h1 role="status" className="text-[28px] font-semibold leading-8 text-ink">Your account is ready</h1>
+          <p className="text-base leading-6 text-muted">Your key now exists in three parts. No one holds the whole key, and any two parts can sign.</p>
+        </div>
+        <div className="mt-6">{cards}</div>
+        <div className="mt-6 flex flex-col items-start gap-2">
+          <span className="text-sm text-muted">Your wallet address (Base Sepolia, testnet)</span>
+          <CopyField value={address} display={address} label="Copy wallet address" className="break-all" />
+          <a href={`${BASESCAN}${address}`} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center gap-1.5 text-sm text-info underline">
+            View on Basescan <ExternalLink size={14} strokeWidth={1.75} aria-hidden="true" />
+          </a>
+          {isMockMode && <SimulatedPill>Simulated wallet address</SimulatedPill>}
         </div>
       </PageShell>
     );
@@ -63,10 +106,13 @@ function Creating() {
   return (
     <PageShell
       title="Creating your wallet"
-      subtitle="Swissquote pays the network fees."
+      subtitle="Your key is created in three parts, together. Swissquote pays the network fees."
       footer={error ? <Button onClick={run}>Try again</Button> : undefined}
     >
-      <StepList steps={steps} />
+      <div aria-live="polite">{cards}</div>
+      <div className="mt-6">
+        <StepList steps={steps} />
+      </div>
       {error && <Banner variant="warning" className="mt-6">{error}</Banner>}
     </PageShell>
   );

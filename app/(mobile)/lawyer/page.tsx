@@ -7,6 +7,7 @@ import { getLawyerStatus, inviteLawyer } from "@/lib/sqkeys";
 import { Banner, BottomSheet, Button, IconButton, Input, KeyShowcase, PageShell, RowCard, SimulatedPill, StatusChip } from "@/components/ui";
 import { Guard } from "../_lib/Guard";
 import { isNotAuthenticated, messageOf } from "../_lib/errors";
+import { SimulateLawyerButton } from "../_lib/SimulateLawyerButton";
 import { SESSION_KEYS, readSession, writeSession } from "../_lib/session";
 
 type LawyerState = { status: "none" | "invited" | "accepted"; displayName?: string; expiresAt?: string };
@@ -96,7 +97,7 @@ function Lawyer({ initial }: { initial: LawyerState["status"] }) {
   }, [accepted]);
 
   const footer = accepted ? (
-    <Button trailingIcon={<ChevronRight size={24} strokeWidth={1.75} />} onClick={() => router.push("/creating")}>
+    <Button trailingIcon={<ChevronRight size={24} strokeWidth={1.75} />} onClick={() => router.push("/key")}>
       Continue
     </Button>
   ) : invited ? (
@@ -145,6 +146,7 @@ function Lawyer({ initial }: { initial: LawyerState["status"] }) {
             <>
               <Button variant="secondary" disabled={expired} onClick={() => setSheetOpen(true)}>Show the link</Button>
               <Button variant="ghost" loading={loading} onClick={createLink}>Create a new link</Button>
+              <SimulateLawyerButton onDone={refresh} />
             </>
           )}
         </div>
