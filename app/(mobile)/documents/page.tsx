@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronRight } from "lucide-react";
 import { registerAccount } from "@/lib/sqkeys";
+import { LEGAL_DOCUMENT_VERSION } from "@/lib/legalVersion";
 import { Banner, Button, PageShell, StatusChip } from "@/components/ui";
 import { Guard } from "../_lib/Guard";
 import { messageOf } from "../_lib/errors";
@@ -15,7 +16,6 @@ const DOCUMENTS = [
   { id: "recovery", label: "I have read the Recovery terms", name: "Recovery terms" },
   { id: "privacy", label: "I have read the Privacy policy", name: "Privacy policy" },
 ] as const;
-const VERSION = "1.0";
 
 // C3. Four separate checkboxes, never pre-ticked. Texts: annex F.2.
 function Documents() {
@@ -26,16 +26,18 @@ function Documents() {
   const [error, setError] = useState<string | null>(null);
 
   function toggle(index: number) {
-    const next = ticked.map((v, i) => (i === index ? !v : v));
-    setTicked(next);
-    writeSession(SESSION_KEYS.consents, next);
+    setTicked((prev) => {
+      const next = prev.map((v, i) => (i === index ? !v : v));
+      writeSession(SESSION_KEYS.consents, next);
+      return next;
+    });
   }
 
   async function accept() {
     setError(null);
     setLoading(true);
     try {
-      await registerAccount(DOCUMENTS.map((d) => ({ document: d.id, version: VERSION })));
+      await registerAccount(DOCUMENTS.map((d) => ({ document: d.id, version: LEGAL_DOCUMENT_VERSION })));
       router.push("/lawyer");
     } catch (e) {
       setError(messageOf(e));

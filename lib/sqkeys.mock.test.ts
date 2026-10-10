@@ -1,7 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import * as api from "./sqkeys";
 import { acceptMockLawyerInvite, resetMockState, resolveMockTx, seedActiveWallet, setMockPanel, skipDelay } from "./sqkeys.mock";
 import type { TxView } from "./sqkeys";
+import { LEGAL_DOCUMENT_VERSION } from "./legalVersion";
 
 // The mock sleeps 300-1500 ms per call: run it on fake timers.
 const settle = <T>(p: Promise<T>): Promise<T> => vi.runAllTimersAsync().then(() => p);
@@ -40,7 +43,7 @@ describe("mock onboarding", () => {
   it("goes from login to an active wallet", async () => {
     await settle(api.loginSwissquote("client.lea", "demo1234"));
     await settle(api.runKyc(() => undefined));
-    await settle(api.registerAccount(["terms", "risk", "recovery", "privacy"].map((document) => ({ document: document as "terms", version: "1" }))));
+    await settle(api.registerAccount(["terms", "risk", "recovery", "privacy"].map((document) => ({ document: document as "terms", version: LEGAL_DOCUMENT_VERSION }))));
     const device = await settle(api.createDevicePasskey("My phone"));
     expect(device.current).toBe(true);
     const invite = await settle(api.inviteLawyer("Léa"));
@@ -74,7 +77,7 @@ describe("mock onboarding", () => {
 
   it("requires all four consents", async () => {
     await settle(api.loginSwissquote("client.lea", "demo1234"));
-    const err = await settle(api.registerAccount([{ document: "terms", version: "1" }]).catch((e) => e));
+    const err = await settle(api.registerAccount([{ document: "terms", version: LEGAL_DOCUMENT_VERSION }]).catch((e) => e));
     expect(err.code).toBe("CONSENTS_REQUIRED");
   });
 });
@@ -226,5 +229,36 @@ describe("mock recovery", () => {
     await settle(api.verifyIdentity(recoveryId, { bankingAnswer: "Geneva" }));
     const err = await settle(api.sendUsdc({ to: RECIPIENT_KNOWN, amountUsdc: "1.00" }, () => undefined).catch((e) => e));
     expect(err.code).toBe("RECOVERY_IN_PROGRESS");
+  });
+});
+
+describe("consent record", () => {
+  it("stores the acceptance time (ISO 8601, UTC) and version for each document", async () => {
+    vi.setSystemTime(new Date("2026-03-04T10:20:30.000Z"));
+    await settle(api.loginSwissquote("client.lea", "demo1234"));
+    await settle(api.registerAccount(["terms", "risk", "recovery", "privacy"].map((document) => ({ document: document as "terms", version: LEGAL_DOCUMENT_VERSION }))));
+    const consents = (await settle(api.getAccount())).consents ?? [];
+    expect(consents).toHaveLength(4);
+    for (const c of consents) {
+      expect(c.version).toBe(LEGAL_DOCUMENT_VERSION);
+      expect(c.acceptedAt).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
+      expect(Date.parse(c.acceptedAt)).toBeGreaterThanOrEqual(Date.parse("2026-03-04T10:20:30.000Z"));
+    }
+  });
+});
+
+describe("legal document version", () => {
+  it("is defined once: the documents screen imports it and has no literal of its own", () => {
+    const page = readFileSync(join(process.cwd(), "app/(mobile)/documents/page.tsx"), "utf8");
+    expect(page).toContain("LEGAL_DOCUMENT_VERSION");
+    expect(page).not.toMatch(/version:\s*["']/);
+    expect(page).not.toMatch(/\bVERSION\s*=/);
+    expect(LEGAL_DOCUMENT_VERSION).toBe("1.0");
+  });
+
+  it("is what the seeded mock account carries", async () => {
+    seedActiveWallet();
+    const consents = (await settle(api.getAccount())).consents ?? [];
+    expect(consents.every((c) => c.version === LEGAL_DOCUMENT_VERSION)).toBe(true);
   });
 });

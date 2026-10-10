@@ -4,6 +4,7 @@
 import { fromBase, toBase } from "./amounts";
 import { DEFAULT_POLICY, UNLIMITED_BASE, evaluatePolicy } from "./sqkeys.mock.policy";
 import type { PolicyDecision, PolicyKind } from "./sqkeys.mock.policy";
+import { LEGAL_DOCUMENT_VERSION } from "./legalVersion";
 import { SqKeysError } from "./sqkeys.types";
 import type { Account, AccountStatus, ActivityItem, Alert, Device, Reason, RecoveryView, TransferCheck, TxStatus, TxView, WalletStep } from "./sqkeys.types";
 
@@ -64,7 +65,7 @@ interface MockState {
   v: 1;
   loggedIn: boolean;
   kycVerified: boolean;
-  consents: { document: string; version: string }[];
+  consents: { document: string; version: string; acceptedAt: string }[];
   status: AccountStatus;
   address: string | null;
   devices: Device[];
@@ -431,7 +432,8 @@ export async function registerAccount(consents: { document: "terms" | "risk" | "
   await sleep(500, 900);
   const missing = (["terms", "risk", "recovery", "privacy"] as const).filter((d) => !consents.some((c) => c.document === d));
   if (missing.length > 0) throw new SqKeysError("CONSENTS_REQUIRED", "Accept the Terms of use, Risk warning, Recovery terms and Privacy policy to continue.");
-  s.consents = consents.map((c) => ({ document: c.document, version: c.version }));
+  const acceptedAt = new Date().toISOString();
+  s.consents = consents.map((c) => ({ document: c.document, version: c.version, acceptedAt }));
   save();
 }
 
@@ -504,6 +506,7 @@ export async function getAccount(): Promise<Account> {
     lawyer: { status, ...(status === "accepted" ? { displayName: LAWYER_NAME } : {}) },
     devices: s.devices,
     exitKitCreatedAt: s.exitKitCreatedAt,
+    consents: s.consents,
     recovery: recovery ? { id: recovery.id, status: recoveryStatus(recovery) } : null,
     policy: {
       perTxCap: fromBase(DEFAULT_POLICY.perTxCapBase.toString()),
@@ -793,7 +796,7 @@ export function seedActiveWallet(): void {
   const now = Date.now();
   s.loggedIn = true;
   s.kycVerified = true;
-  s.consents = (["terms", "risk", "recovery", "privacy"] as const).map((document) => ({ document, version: "1" }));
+  s.consents = (["terms", "risk", "recovery", "privacy"] as const).map((document) => ({ document, version: LEGAL_DOCUMENT_VERSION, acceptedAt: iso(now) }));
   s.status = "active";
   s.address = newAddress();
   s.devices = [{ id: newId("dev"), label: "This phone", createdAt: iso(now), current: true }];

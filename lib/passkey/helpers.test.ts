@@ -39,9 +39,9 @@ describe("rpIdProblem", () => {
   it("rejects localhost, IPs and insecure pages", () => {
     expect(rpIdProblem("localhost", true)).not.toBeNull();
     expect(rpIdProblem("192.168.1.20", true)).not.toBeNull();
-    expect(rpIdProblem("sq-keys.vercel.app", false)).not.toBeNull();
+    expect(rpIdProblem("sq-keys-iota.vercel.app", false)).not.toBeNull();
   });
-  it("accepts an HTTPS hostname", () => expect(rpIdProblem("sq-keys.vercel.app", true)).toBeNull());
+  it("accepts an HTTPS hostname", () => expect(rpIdProblem("sq-keys-iota.vercel.app", true)).toBeNull());
 });
 
 describe("interpretCapabilities", () => {
@@ -61,10 +61,10 @@ describe("interpretCapabilities", () => {
 });
 
 describe("creation options", () => {
-  const base = { rpId: "sq-keys.vercel.app", challenge: bytes(32), userId: bytes(16), userName: "SQ Keys client", excludeIds: [bytes(8)] };
+  const base = { rpId: "sq-keys-iota.vercel.app", challenge: bytes(32), userId: bytes(16), userName: "SQ Keys client", excludeIds: [bytes(8)] };
   it("follows CDC section 6", () => {
     const o = buildCreationOptions(base);
-    expect(o.rp.id).toBe("sq-keys.vercel.app");
+    expect(o.rp.id).toBe("sq-keys-iota.vercel.app");
     expect(o.pubKeyCredParams?.map((p) => p.alg)).toEqual([-7, -257]);
     expect(o.authenticatorSelection).toMatchObject({ authenticatorAttachment: "platform", residentKey: "required", requireResidentKey: true, userVerification: "required" });
     expect(o.attestation).toBe("none");

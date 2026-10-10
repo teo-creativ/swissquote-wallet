@@ -1,0 +1,20 @@
+{
+  "name": "sq-keys-spike",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "s1": "tsx s1.ts",
+    "s2": "tsx s2.ts",
+    "s3": "tsx s3.ts",
+    "s4": "tsx s4.ts",
+    "s5": "tsx s5.ts"
+  },
+  "dependencies": {
+    "@noble/curves": "2.4.0",
+    "@silencelaboratories/dkls-wasm-ll-node": "1.2.0",
+    "viem": "2.57.4"
+  },
+  "devDependencies": {
+    "tsx": "4.23.15"
+  }
+}

@@ -188,13 +188,13 @@ Limite à dire : un voleur qui détient l'ancien téléphone déverrouillé peut
 
 | Composant | Dossier | Projet Vercel | Base de données | Rôle |
 |---|---|---|---|---|
-| **App client** | racine | `sq-keys` → https://sq-keys.vercel.app | Supabase `sq-keys-app` (Aaron) | Interface client ; partie P1 dans le navigateur ; **coordinateur** des échanges MPC ; aucune part de clé |
+| **App client** | racine | `sq-keys` → https://sq-keys-iota.vercel.app | Supabase `sq-keys-app` (Aaron) | Interface client ; partie P1 dans le navigateur ; **coordinateur** des échanges MPC ; aucune part de clé |
 | **Portail avocat** | `lawyer/` | `sq-keys-lawyer` → https://sq-keys-lawyer.vercel.app | Supabase `sq-keys-lawyer` (compte de Téo) | Interface avocat ; **nœud P2** ; moteur de politique ; approbations ; journal |
 | **Swissquote simulé** | `sq-mock/` | `sq-keys-mock` (compte de Théotime) | Supabase `sq-keys-mock` (Théotime) | Connexion, KYC, compte bancaire, preuve de propriété, **nœud P3**, vérification d'identité, gaz, sanctions, console |
 | **Sortie** | `exit/` | aucun (script) | aucune | Récupération sans Swissquote (P1 + P2) |
 | **Chaîne** | | | | Base Sepolia (chain id 84532), USDC de test |
 
-Les URL de production sont fixes. Les **passkeys sont liées au domaine** : `sq-keys.vercel.app` pour le client, `sq-keys-lawyer.vercel.app` pour l'avocat. Les URL se lisent dans des variables d'environnement, jamais en dur. Si un nom Vercel est pris, le nouveau nom s'applique partout via les variables.
+Les URL de production sont fixes. Les **passkeys sont liées au domaine** : `sq-keys-iota.vercel.app` pour le client, `sq-keys-lawyer.vercel.app` pour l'avocat. Les URL se lisent dans des variables d'environnement, jamais en dur. Si un nom Vercel est pris, le nouveau nom s'applique partout via les variables.
 
 ### 3.2 Schéma (Mermaid)
 

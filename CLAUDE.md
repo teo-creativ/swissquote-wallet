@@ -23,10 +23,11 @@ Self-custody wallet prototype for the Swissquote track (BSA x EPFL hackathon). E
 ## Roles and branches (one branch each, never force-push)
 Téo: design and front, branch `teo/ui` (`components/ui/`, `app/console/`, screens C1-C21 and L1-L10 on mocks).
 Aaron: logic, MPC, nodes, policy engine, branch `main`. Théotime: `sq-mock/`, `exit/`, branch `theotime/sq`.
+For now, Aaron's and Théotime's work (logic, nodes, `sq-mock/`, `exit/`, `spike/`) lives on branch `aaron/logic`.
 Téo's front imports ONLY `lib/sqkeys.ts` (client) and `lawyer/lib/lawyerApi.ts` (lawyer). Signatures are a contract (CDC annex D): never change them alone.
 
 ## Design
 Each project folder has a `design.md`. Read it before building any screen. **Mockups win over the CDC for everything visual; the CDC wins for logic and for texts it fixes in annex F.** Orange is #FA5B35 and never changes. Fonts: Outfit + Poppins. Scope: Base network, USDC only. Use the tokens in `app/globals.css`; no raw hex in components. Mockups are in `docs/mockups/` (local only).
 
 ## Commands
-`npm run dev` (client :3000), `cd lawyer && npm run dev` (:3001), `npm run build`, `npm test`, `npm run typecheck`, `npm run sync-shared`, `npm run check-shared`, `npm run check-secrets`, `npm run check-chain`, `npm run doctor` (run it at the start of every session: it checks that your setup matches everyone else's).
+`npm run dev` (client :3000), `cd lawyer && npm run dev` (:3001), `npm run build`, `npm test`, `npm run typecheck`, `npm run sync-shared`, `npm run check-shared`, `npm run check-secrets`, `npm run check-chain`, `npm run test:e2e` (builds, then walks the onboarding in Chrome on a mobile viewport), `npm run check-routes -- <url>` (after every deploy), `npm run doctor` (run it at the start of every session: it checks that your setup matches everyone else's).

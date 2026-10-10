@@ -18,19 +18,21 @@ If you lose your phone, you create a new wallet on a new device and your assets 
 
 Recovery cannot happen without all three of these steps. Swissquote alone cannot start it. Your lawyer alone cannot start it.
 
+Swissquote and your lawyer together hold two of the three shares, so together they are technically able to start a recovery and to move your assets. Safeguards: identity check, waiting period, alerts on your registered devices, the right to cancel, and the record of each step.
+
 ## 4. Waiting period and cancellation
 
-After approval, a waiting period starts. In this prototype it lasts two minutes so it can be demonstrated. In a real product it would be 24 hours. During this period:
+Once your identity is verified, a waiting period starts. In this prototype it lasts two minutes so it can be demonstrated. In a real product it would be 24 hours. During this period:
 
 - you can cancel the recovery at any time from any device where you are signed in;
 - your lawyer can also cancel it;
-- alerts are sent through the app and the lawyer portal, and never by email.
+- alerts are shown on your registered devices and in the lawyer portal, and are never sent by email.
 
-The transfer to your new wallet only happens when the waiting period ends and has not been cancelled. Both the lawyer service and the Swissquote service check the waiting period on their own.
+The transfer to your new wallet only happens when your lawyer has approved, the waiting period has ended and the recovery has not been cancelled. Both the lawyer service and the Swissquote service check the waiting period on their own.
 
 ## 5. If an attacker tries
 
-An attacker with your phone and your email must still pass Swissquote's identity check, wait for the delay and obtain your lawyer's approval. A failed identity check ends the recovery, creates an alert for your lawyer and moves no assets. Every step is recorded in a record that cannot be changed without detection.
+An attacker with your phone and your email must still pass Swissquote's identity check, wait for the delay and obtain your lawyer's approval. A failed identity check ends the recovery, creates an alert for your lawyer and moves no assets. Every step is recorded in a record in which each entry is linked to the previous one, so a later change can be detected. Each service keeps its own copy, so this does not by itself prevent a service from altering its own copy.
 
 ## 6. Leaving without Swissquote
 

@@ -18,7 +18,7 @@ The student team that publishes SQ Keys is responsible for the data described he
 - **Wallet data:** your public wallet address, the public key, and your transactions. Public blockchain data is visible to everyone.
 - **Technical data:** device name, the public part of your passkey, and session information needed to keep you signed in.
 - **Process data:** transfer requests, decisions, limits, recovery steps with dates, and alerts.
-- **Lawyer data:** your display name, wallet address and history of your requests are shown to the lawyer you invite, so they can do their role. The lawyer's name, firm and passkey are kept by the lawyer portal.
+- **Lawyer data:** your display name, wallet address and history of your requests are shown to the lawyer you invite, so they can do their role. The lawyer's name, firm and passkey are kept by the lawyer portal. The lawyer processes this data under their own professional duties and is responsible for that processing.
 - **Key shares:** each party stores only its own encrypted share. A share alone does not reveal your key.
 
 ## 4. Why we process it
@@ -35,7 +35,7 @@ We use only cookies that are strictly necessary for the application to work, suc
 
 ## 7. Service providers and locations
 
-The prototype uses third-party infrastructure: a web hosting provider, a database provider and a public blockchain node provider. Some of them process data outside Switzerland. The list with the country of processing is in the project's README. Where data leaves Switzerland, we rely on the safeguards allowed by Swiss law.
+The prototype uses third-party infrastructure: a web hosting provider, a database provider and a public blockchain node provider. Some providers may process data outside Switzerland; the list is in the project's README. Where data leaves Switzerland, we rely on an adequate level of protection or contractual safeguards, as provided by article 16 of the Federal Act on Data Protection.
 
 ## 8. Storage
 

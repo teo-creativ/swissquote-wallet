@@ -14,6 +14,7 @@ import type {
   TimelineStep,
 } from "./lawyerApi.types";
 import { LawyerApiError } from "./lawyerApi.types";
+import { LAWYER_TERMS_VERSION } from "./legal";
 import { diffPolicy, normalizeAmount, validatePolicy } from "./policy";
 
 export const MOCK_TIMING = { readMs: 150, passkeyMs: 800 };
@@ -55,7 +56,7 @@ const EXIT_TO = "0xA04c7E19d3B5f6280c1E7a9D4b36F85e02C1d7b9";
 type StoredRequest = RequestDetail;
 
 type Store = {
-  me: { displayName: string };
+  me: { displayName: string; consent?: { termsVersion: string; acceptedAt: string } };
   clients: Omit<ClientView, "pendingRequests" | "policyVersion">[];
   policies: Record<string, PolicyEdit & { version: number }>;
   requests: StoredRequest[];
@@ -182,7 +183,7 @@ function seed(): Store {
   });
 
   return {
-    me: { displayName: "Demo Lawyer" },
+    me: { displayName: "Demo Lawyer", consent: { termsVersion: LAWYER_TERMS_VERSION, acceptedAt: iso(now - 30 * DAY) } },
     clients: [
       { id: "client.lea", displayName: "Léa Martin", address: LEA, status: "active" },
       { id: "client.demo", displayName: "Demo Client", address: DEMO, status: "active" },
@@ -251,11 +252,13 @@ export async function inspectInvitation(token: string) {
   return { valid: true, clientDisplayName: "Léa Martin", expiresAt: iso(Date.now() + 7 * DAY) };
 }
 
-export async function acceptInvitation(token: string, i: { displayName: string; firm: string }): Promise<void> {
+export async function acceptInvitation(token: string, i: { displayName: string; firm: string; consent?: { termsVersion: string } }): Promise<void> {
   await passkey();
   if (token === "expired" || token === "used") throw new LawyerApiError("INVITATION_INVALID", "This invitation is no longer valid.");
   if (!i.displayName.trim()) throw new LawyerApiError("INVALID_INPUT", "Enter your name.");
+  if (!i.consent?.termsVersion) throw new LawyerApiError("CONSENT_REQUIRED", "Confirm that you understand the role to continue.");
   store.me.displayName = i.displayName.trim();
+  store.me.consent = { termsVersion: i.consent.termsVersion, acceptedAt: new Date().toISOString() };
   append("LOGIN", "Account created with a passkey.");
 }
 
@@ -271,6 +274,7 @@ export async function getMe() {
     displayName: store.me.displayName,
     clients: store.clients.length,
     pendingRequests: store.requests.filter((r) => r.status === "pending").length,
+    ...(store.me.consent ? { consent: store.me.consent } : {}),
   };
 }
 

@@ -20,7 +20,7 @@ export default function Splash() {
         </Button>
       </main>
       <div className="mt-auto flex justify-center">
-        <img src="/illustrations/hand-phone.png" alt="" width={390} height={497} className="h-auto w-full max-w-[390px]" />
+        <img src="/illustrations/hand-phone.png" alt="" aria-hidden="true" width={390} height={497} className="h-auto w-full max-w-[390px]" />
       </div>
     </div>
   );

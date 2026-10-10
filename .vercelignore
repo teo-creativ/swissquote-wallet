@@ -1,9 +1,9 @@
 # The root project (sq-keys) must not upload the other projects.
-lawyer
-sq-mock
-exit
-spike
-docs
-shared
+/lawyer
+/sq-mock
+/exit
+/spike
+/docs
+/shared
 node_modules
 .env*

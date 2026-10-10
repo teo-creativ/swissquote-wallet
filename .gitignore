@@ -10,8 +10,16 @@ sqkeys-exit-kit.json
 next-env.d.ts
 .DS_Store
 
+# M0 spike: key shares and local state never leave the machine
+spike/.local/
+spike/node_modules/
+
 # Local design reference only (mockups show a Swissquote wordmark: not for the public repo, CDC 9.9 #19)
 docs/mockups/
 
 .vercel
 .env*
+
+# Playwright
+test-results/
+playwright-report/

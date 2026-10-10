@@ -16,6 +16,7 @@ import { shortAddress } from "../_lib/send";
 import { getProtectionLevel } from "@/lib/passkey/webauthn";
 
 const MIN_PASSPHRASE = 12; // CDC 6.4
+const acceptedOn = (iso: string) => new Date(iso).toLocaleString("en-GB", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", timeZone: "UTC", timeZoneName: "short" });
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
@@ -184,7 +185,10 @@ function Security({ initial }: { initial: Account }) {
       </Section>
 
       <Section title="Legal">
-        {LEGAL.map((l) => <RowCard key={l.slug} leading={<FileText size={20} strokeWidth={1.75} />} title={l.label} href={`/legal/${l.slug}`} />)}
+        {LEGAL.map((l) => {
+          const accepted = account.consents?.find((c) => c.document === l.slug);
+          return <RowCard key={l.slug} leading={<FileText size={20} strokeWidth={1.75} />} title={l.label} subtitle={accepted ? `Accepted on ${acceptedOn(accepted.acceptedAt)}` : undefined} href={`/legal/${l.slug}`} />;
+        })}
       </Section>
 
       <div className="mt-8">
