@@ -5,9 +5,10 @@ cd "$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
 PATTERN='(0x)?[0-9a-fA-F]{64}|service_role|PRIVATE_KEY=[^ ]|-----BEGIN|NEXT_PUBLIC_[A-Z_]*(SECRET|SERVICE|PRIVATE)'
 EXCL=(':!public/**' ':!**/public/**' ':!*.svg' ':!*.png' ':!*.md' ':!scripts/check-secrets.sh' ':!package-lock.json' ':!**/package-lock.json' ':!CDC*.md' ':!**/.env.example' ':!.env.example' ':!docs/**' ':!**/sql/**' ':!sql/**' ':!**/*.mock.ts' ':!**/*.mock.tsx' ':!**/*.test.ts' ':!**/*.test.tsx' ':!**/dev/**' ':!components/ui/UiShowcase.tsx')
 found=0
+# Known false positive in history: ERC-20 transfer calldata (selector a9059cbb, 0xdead, 1 USDC) in an old spike commit. Public data, not a secret.
 if git rev-parse --git-dir >/dev/null 2>&1; then
   git grep -InE "$PATTERN" -- . "${EXCL[@]}" && found=1
-  git log -p --all -G"$PATTERN" --pretty=format:'%h %s' -- . "${EXCL[@]}" | grep -E "^\+.*($PATTERN)" && found=1
+  git log -p --all -G"$PATTERN" --pretty=format:'%h %s' -- . "${EXCL[@]}" | grep -E "^\+.*($PATTERN)" | grep -v 'data: "0xa9059cbb' && found=1
 else
   grep -rnE "$PATTERN" --exclude-dir=node_modules --exclude-dir=.next --exclude=package-lock.json --exclude=.env.example . && found=1
 fi
