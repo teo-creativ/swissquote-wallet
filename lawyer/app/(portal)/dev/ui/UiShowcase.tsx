@@ -65,7 +65,7 @@ export function UiShowcase() {
       <div className="grid gap-6 lg:grid-cols-2">
         <Block title="Buttons">
           <Button>Approve with passkey</Button>
-          <Button variant="secondary" className="text-danger">
+          <Button variant="danger">
             Decline with passkey
           </Button>
           <Button variant="dark">Dark</Button>

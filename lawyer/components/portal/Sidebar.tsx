@@ -12,7 +12,7 @@ export function Sidebar({ lawyerName }: { lawyerName: string }) {
   return (
     <aside className="sticky top-0 hidden h-dvh w-60 shrink-0 flex-col border-r border-line bg-white md:flex">
       <div className="px-6 pb-6 pt-7">
-        <Link href="/dashboard" className="block rounded-lg">
+        <Link href="/" className="block rounded-lg">
           <span className="font-display text-[22px] font-semibold leading-7 text-ink">SQ Keys</span>
           <span className="block text-xs text-muted">Lawyer portal</span>
         </Link>

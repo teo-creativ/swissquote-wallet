@@ -1,10 +1,6 @@
-import { EmptyState } from "@/components/ui";
+import { redirect } from "next/navigation";
 
-export default function DashboardPage() {
-  return (
-    <>
-      <h1 className="text-[28px] font-semibold leading-9 text-ink">Dashboard</h1>
-      <EmptyState className="mt-6 rounded-card border border-line bg-white" />
-    </>
-  );
+// L4 lives at "/". Kept so earlier links and bookmarks still work.
+export default function DashboardRedirect() {
+  redirect("/");
 }

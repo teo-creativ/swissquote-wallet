@@ -14,4 +14,5 @@ export { Spinner } from "./Spinner";
 export { Stat } from "./Stat";
 export { StatusChip } from "./StatusChip";
 export { Table } from "./Table";
+export { ToastProvider, useToast } from "./Toast";
 export type { TableColumn } from "./Table";

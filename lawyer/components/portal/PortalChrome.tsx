@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
+import { ToastProvider } from "@/components/ui";
 import { getMe } from "@/lib/lawyerApi";
 import { MobileTabBar } from "./MobileTabBar";
 import { Sidebar } from "./Sidebar";
@@ -28,7 +29,7 @@ export function PortalChrome({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <>
+    <ToastProvider>
       <SimulatedStrip />
       <div className="flex">
         <Sidebar lawyerName={name} />
@@ -38,6 +39,6 @@ export function PortalChrome({ children }: { children: ReactNode }) {
         </div>
       </div>
       <MobileTabBar />
-    </>
+    </ToastProvider>
   );
 }

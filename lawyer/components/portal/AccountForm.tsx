@@ -45,7 +45,7 @@ export function AccountForm({ token }: { token: string }) {
     setBusy(true);
     try {
       await acceptInvitation(token, { displayName: name.trim(), firm: firm.trim() });
-      router.push("/dashboard");
+      router.push("/");
     } catch (e) {
       setFailure(e instanceof Error && e.message ? e.message : "Something went wrong. Try again.");
       setBusy(false);

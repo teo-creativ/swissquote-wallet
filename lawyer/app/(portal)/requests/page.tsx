@@ -1,10 +1,7 @@
-import { EmptyState } from "@/components/ui";
+import { RequestsView } from "@/components/portal/RequestsView";
+
+export const metadata = { title: "Requests · SQ Keys Lawyer" };
 
 export default function RequestsPage() {
-  return (
-    <>
-      <h1 className="text-[28px] font-semibold leading-9 text-ink">Requests</h1>
-      <EmptyState className="mt-6 rounded-card border border-line bg-white" />
-    </>
-  );
+  return <RequestsView />;
 }

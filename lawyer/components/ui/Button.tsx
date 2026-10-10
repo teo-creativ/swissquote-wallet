@@ -1,7 +1,7 @@
 import type { ButtonHTMLAttributes, ReactNode } from "react";
 import { Spinner } from "./Spinner";
 
-export type ButtonVariant = "primary" | "secondary" | "dark" | "ghost";
+export type ButtonVariant = "primary" | "secondary" | "danger" | "dark" | "ghost";
 
 export type ButtonProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, "children"> & {
   variant?: ButtonVariant;
@@ -18,6 +18,8 @@ export type ButtonProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, "childre
 const enabled: Record<ButtonVariant, string> = {
   primary: "bg-brand text-white",
   secondary: "bg-surface text-ink",
+  /** Same shape as secondary, red text: "Decline with passkey". */
+  danger: "bg-surface text-danger",
   dark: "bg-dark text-white",
   ghost: "bg-transparent text-ink",
 };
@@ -26,6 +28,7 @@ const enabled: Record<ButtonVariant, string> = {
 const disabled: Record<ButtonVariant, string> = {
   primary: "bg-brand-soft text-white",
   secondary: "bg-surface text-muted",
+  danger: "bg-surface text-muted",
   dark: "bg-line text-muted",
   ghost: "bg-transparent text-muted",
 };
