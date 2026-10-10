@@ -16,3 +16,6 @@ spike/node_modules/
 
 # Local design reference only (mockups show a Swissquote wordmark: not for the public repo, CDC 9.9 #19)
 docs/mockups/
+
+.vercel
+.env*
