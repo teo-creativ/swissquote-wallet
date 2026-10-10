@@ -1,0 +1,4 @@
+# lawyer / 01 portal shell and UI kit
+Open this in a VS Code window on lawyer/. Read CLAUDE.md, design.md and the CDC sections cited below (docs/CDC_v3.1.md) before writing code. Work only in the folders named here. No secrets, no raw hex in components (use tokens), all user-facing text in English copied from CDC annex F. When finished: npm run typecheck, npm test, npm run build, then commit with a clear English message. (CDC: 7.1, 7.3, F.1).
+Do: copy the needed primitives from the client design language into components/ui/ (do NOT import across projects): Button, Input, StatusChip, Card, Table, Dialog, Banner, SimulatedPill, Stat, Countdown, CopyField, EmptyState. Build app/(portal)/layout.tsx with the top bar, "Simulated lawyer (played by a team member)" strip and sidebar. /dev/ui showcase. Desktop first, usable at 390px.
+Done when: the showcase renders and the build passes.

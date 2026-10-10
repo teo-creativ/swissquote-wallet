@@ -1,0 +1,4 @@
+# lawyer / 05 recovery and exit detail, client policy L7 L8
+Open in lawyer/. Read CLAUDE.md, design.md and the CDC sections cited below (docs/CDC_v3.1.md) before writing code. Work only in the folders named here. No secrets, no raw hex in components (use tokens), all user-facing text in English copied from CDC annex F. When finished: npm run typecheck, npm test, npm run build, then commit with a clear English message. (CDC 6.2, 6.4, 8.2, 7.3, F.5, F.6).
+Do: /requests/[id] variants for recovery and exit (L7): old/new wallet, identity check status, live countdown, advice to call the client, Approve / Decline / Cancel recovery equal size. /clients/[id]/policy (L8): four numeric limits with validation (integers, per-tx <= daily), switch for unknown recipients, recipients add/revoke, version history, diff before the passkey prompt.
+Done when: a policy change creates a new version in the mock and shows in the history.

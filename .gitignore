@@ -1,0 +1,14 @@
+node_modules
+.next
+out
+.env*
+!.env.example
+.vercel
+*.keyshare
+sqkeys-exit-kit.json
+*.tsbuildinfo
+next-env.d.ts
+.DS_Store
+
+# Local design reference only (mockups show a Swissquote wordmark: not for the public repo, CDC 9.9 #19)
+docs/mockups/

@@ -1,0 +1,4 @@
+# lawyer / 04 dashboard, requests, transfer detail L4 to L6
+Open in lawyer/. Read CLAUDE.md, design.md and the CDC sections cited below (docs/CDC_v3.1.md) before writing code. Work only in the folders named here. No secrets, no raw hex in components (use tokens), all user-facing text in English copied from CDC annex F. When finished: npm run typecheck, npm test, npm run build, then commit with a clear English message. (CDC 7.3, 5.4, F.6; design.md L6 layout).
+Do: / (L4), /requests (L5 filters + 5 s polling with "Updated n s ago"), /requests/[id] (L6) with reason chips, recipient history, limits, checkbox "Add this recipient to known recipients" (checked), intent hash shown shortened, Approve / Decline with passkey (same size), result toast. Empty state "No pending requests."
+Done when: approving and declining update the list and the dashboard counter.

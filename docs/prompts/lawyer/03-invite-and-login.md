@@ -1,0 +1,4 @@
+# lawyer / 03 invitation, account, login L1 to L3
+Open in lawyer/. Read CLAUDE.md, design.md and the CDC sections cited below (docs/CDC_v3.1.md) before writing code. Work only in the folders named here. No secrets, no raw hex in components (use tokens), all user-facing text in English copied from CDC annex F. When finished: npm run typecheck, npm test, npm run build, then commit with a clear English message. (CDC 4.1 steps 4-5, 7.3, F.6).
+Do: /invite/[token] (L1) shows who invites, what the role means and does NOT allow (no funds, no view of everyday transfers), validity; /invite/[token]/account (L2) name + firm + consent + passkey creation with @simplewebauthn/browser (in mock mode, simulate and show a clear "Simulated" note; keep the real call behind a flag); /login (L3) passkey login. Expired and already-used invitation states.
+Done when: invitation to dashboard works on the mock.

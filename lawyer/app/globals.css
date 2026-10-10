@@ -1,0 +1,36 @@
+@import "tailwindcss";
+@import "@fontsource-variable/outfit";
+@import "@fontsource/poppins/400.css";
+@import "@fontsource/poppins/500.css";
+
+/* Tokens sampled from the Stitch mockups. See design.md. */
+@theme {
+  --color-brand: #FA5B35;        /* Swissquote orange: buttons, hero, icons (do not change) */
+  --color-brand-light: #FB866B;
+  --color-brand-soft: #FFD9CF;
+  --color-hero-top: #FF9D82;
+  --color-hero-bottom: #F95E39;
+  --color-surface: #F1F4FB;
+  --color-ink: #262A33;
+  --color-muted: #555C6B;
+  --color-ok: #0F7B45;
+  --color-ok-bg: #E7F5EE;
+  --color-warn: #A93518;          /* orange-brown for small text on warn-bg (AA) */
+  --color-warn-bg: #FDE9E4;
+  --color-danger: #B42318;
+  --color-danger-bg: #FDEDEC;
+  --color-info: #1F5FBF;
+  --color-info-bg: #EAF1FC;
+  --color-brand-tint: #FDEEEA;   /* active nav pill, soft highlights */
+  --color-line: #E3E6EE;
+  --font-display: "Outfit Variable", system-ui, sans-serif;
+  --font-body: "Poppins", system-ui, sans-serif;
+  --radius-pill: 9999px;
+  --radius-card: 24px;
+  --radius-sheet: 32px;
+}
+
+html { background: #fff; }
+body { font-family: var(--font-body); color: var(--color-ink); -webkit-font-smoothing: antialiased; }
+h1, h2, h3 { font-family: var(--font-display); }
+:focus-visible { outline: 3px solid var(--color-ink); outline-offset: 2px; }
