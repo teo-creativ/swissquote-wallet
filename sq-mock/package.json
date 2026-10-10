@@ -11,6 +11,7 @@
     "start": "next start -p 3002",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
+    "seed": "tsx scripts/seed.ts",
     "gen-keypair": "tsx ../scripts/gen-keypair.ts"
   },
   "dependencies": {
