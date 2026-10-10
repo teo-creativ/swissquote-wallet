@@ -39,6 +39,8 @@ const step = (s: string) => console.log(`\n== ${s}`);
 const sent = async (hash: Hex) => {
   const r = await pub.waitForTransactionReceipt({ hash });
   if (r.status !== "success") throw new Error(`transaction reverted: ${hash}`);
+  // Public RPC nodes are load balanced: wait until reads see the new block.
+  await new Promise((res) => setTimeout(res, 4000));
   return r;
 };
 
