@@ -26,9 +26,11 @@ function Documents() {
   const [error, setError] = useState<string | null>(null);
 
   function toggle(index: number) {
-    const next = ticked.map((v, i) => (i === index ? !v : v));
-    setTicked(next);
-    writeSession(SESSION_KEYS.consents, next);
+    setTicked((prev) => {
+      const next = prev.map((v, i) => (i === index ? !v : v));
+      writeSession(SESSION_KEYS.consents, next);
+      return next;
+    });
   }
 
   async function accept() {
