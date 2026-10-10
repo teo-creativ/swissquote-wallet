@@ -1,29 +1,28 @@
+import { readFile } from "node:fs/promises";
+import path from "node:path";
 import { notFound } from "next/navigation";
-import { PageShell } from "@/components/ui";
+import { LegalView } from "../LegalView";
 
-// C20 stubs: the texts are written by Aaron (CDC 9.8) and will replace the placeholder.
-const TITLES: Record<string, string> = {
+// C20. The texts live in content/legal/*.md (final wording: Aaron, CDC 9.8). Read at build time.
+const LEGAL_DOCS: Record<string, string> = {
   terms: "Terms of use",
   risk: "Risk warning",
   recovery: "Recovery terms",
   privacy: "Privacy policy",
   cookies: "Cookies",
-  legal: "Legal notice",
+  notice: "Legal notice",
 };
 
 export function generateStaticParams() {
-  return Object.keys(TITLES).map((doc) => ({ doc }));
+  return Object.keys(LEGAL_DOCS).map((doc) => ({ doc }));
 }
 
 export const dynamicParams = false;
 
 export default async function LegalPage({ params }: { params: Promise<{ doc: string }> }) {
   const { doc } = await params;
-  const title = TITLES[doc];
+  const title = LEGAL_DOCS[doc];
   if (!title) notFound();
-  return (
-    <PageShell title={title} backHref="/documents">
-      <p className="text-base leading-6 text-muted">This text is being written. It will appear here before the demo.</p>
-    </PageShell>
-  );
+  const source = await readFile(path.join(process.cwd(), "content", "legal", `${doc}.md`), "utf8");
+  return <LegalView title={title} source={source} />;
 }

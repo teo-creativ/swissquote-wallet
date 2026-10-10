@@ -1,32 +1,17 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import type { ReactNode } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowDownLeft, ArrowUpRight, History, House, KeyRound, Landmark, Shield, Smartphone, ArrowUpDown } from "lucide-react";
+import { ArrowDownLeft, ArrowUpRight, KeyRound, Landmark, Smartphone } from "lucide-react";
 import { getActivity, getBalance } from "@/lib/sqkeys";
-import type { Account, ActivityItem, TxStatus } from "@/lib/sqkeys";
-import { Banner, Button, CoinIcon, CopyField, HeroCard, PageShell, RowCard, StatusChip, TabBar } from "@/components/ui";
-import type { ChipStatus } from "@/components/ui/StatusChip";
+import type { Account, ActivityItem } from "@/lib/sqkeys";
+import { Banner, Button, CopyField, HeroCard, PageShell, RowCard, StatusChip } from "@/components/ui";
+import { ActivityRow } from "../_lib/ActivityRow";
+import { AppTabBar } from "../_lib/AppTabBar";
 import { Guard } from "../_lib/Guard";
 import { isNotAuthenticated, messageOf } from "../_lib/errors";
 import { SESSION_KEYS, readSession } from "../_lib/session";
-
-const TABS = [
-  { id: "home", label: "Home", icon: <House size={22} strokeWidth={1.75} />, href: "/home" },
-  { id: "activity", label: "Activity", icon: <History size={22} strokeWidth={1.75} />, href: "/activity" },
-  { id: "transfer", label: "Send", icon: <ArrowUpDown size={22} strokeWidth={1.75} />, href: "/send" },
-  { id: "security", label: "Security", icon: <Shield size={22} strokeWidth={1.75} />, href: "/security" },
-];
-
-const chipFor = (status: TxStatus | undefined): ChipStatus | null => {
-  if (!status || status === "confirmed") return null;
-  if (status === "refused" || status === "failed" || status === "expired" || status === "cancelled") return "failed";
-  return "pending";
-};
-
-const when = (iso: string) => new Date(iso).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 
 function SectionHeader({ title, href, link }: { title: string; href: string; link: string }) {
   return (
@@ -34,27 +19,6 @@ function SectionHeader({ title, href, link }: { title: string; href: string; lin
       <h2 className="text-[22px] font-semibold leading-7 text-ink">{title}</h2>
       <Link href={href} className="flex min-h-11 items-center px-1 text-sm font-medium text-muted">{link}</Link>
     </div>
-  );
-}
-
-function ActivityRow({ item }: { item: ActivityItem }) {
-  const chip = chipFor(item.status);
-  const sign = item.kind === "transfer_in" ? "+" : item.kind === "transfer_out" ? "-" : "";
-  const leading: ReactNode =
-    item.kind === "security" ? <Shield size={20} strokeWidth={1.75} /> : <CoinIcon coin="usdc" size={40} />;
-  return (
-    <RowCard
-      leading={leading}
-      title={item.title}
-      subtitle={when(item.at)}
-      trailing={
-        chip ? (
-          <StatusChip status={chip} />
-        ) : item.amountUsdc ? (
-          <span className="text-base font-semibold text-ink">{`${sign}${item.amountUsdc} USDC`}</span>
-        ) : undefined
-      }
-    />
   );
 }
 
@@ -87,18 +51,9 @@ function Home({ account }: { account: Account }) {
   const lawyerOk = account.lawyer.status === "accepted";
 
   return (
-    <PageShell tabBar={<TabBar items={TABS} activeId="home" />}>
+    <PageShell tabBar={<AppTabBar active="home" />}>
       <h1 className="sr-only">Home{name ? `, ${name}` : ""}</h1>
 
-      {account.recovery && (
-        <Banner
-          variant="warning"
-          className="mb-4"
-          action={<Button variant="secondary" className="min-h-11 text-base" onClick={() => router.push(`/recovery/${account.recovery?.id}`)}>Cancel recovery</Button>}
-        >
-          A recovery was requested for your wallet. If this wasn&apos;t you, cancel it now.
-        </Banner>
-      )}
       {pending > 0 && (
         <Banner variant="info" className="mb-4" action={<Button variant="secondary" className="min-h-11 text-base" onClick={() => router.push("/activity")}>View</Button>}>
           Waiting for your lawyer: {pending === 1 ? "1 request is" : `${pending} requests are`} pending.

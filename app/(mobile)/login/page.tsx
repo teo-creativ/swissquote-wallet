@@ -10,7 +10,7 @@ import { isMockMode } from "@/lib/sqkeys.mode";
 import { Banner, Button, Input, Logo, PageShell, SimulatedPill } from "@/components/ui";
 import { entryRoute } from "../_lib/Guard";
 import { messageOf } from "../_lib/errors";
-import { SESSION_KEYS, writeSession } from "../_lib/session";
+import { SESSION_KEYS, clearSession, readSession, writeSession } from "../_lib/session";
 
 // C1. Texts: annex F.1 and F.2.
 export default function LoginPage() {
@@ -40,7 +40,9 @@ export default function LoginPage() {
       const session = await loginSwissquote(clientId.trim(), password);
       writeSession(SESSION_KEYS.displayName, session.displayName);
       const account = await getAccount();
-      router.replace(entryRoute(account));
+      const next = readSession<string | null>(SESSION_KEYS.afterLogin, null);
+      clearSession(SESSION_KEYS.afterLogin);
+      router.replace(next ?? entryRoute(account));
     } catch (e) {
       setError(messageOf(e));
       setLoading(false);

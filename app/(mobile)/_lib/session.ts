@@ -4,6 +4,7 @@ export const SESSION_KEYS = {
   displayName: "sqkeys.ui.displayName",
   consents: "sqkeys.ui.consents",
   invite: "sqkeys.ui.invite",
+  afterLogin: "sqkeys.ui.afterLogin",
 } as const;
 
 export function readSession<T>(key: string, fallback: T): T {
