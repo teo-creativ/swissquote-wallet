@@ -49,3 +49,14 @@ C6 shows three share cards with waiting / generating / stored. A live round coun
 ## 5. Consent record on `getAccount()` (additive)
 
 `Account` gets an optional field `consents?: { document: string; version: string; acceptedAt: string }[]` (`acceptedAt` is ISO 8601, UTC). The Security screen reads it to show "Accepted on ...". No function signature changed. In live mode `registerAccount` must store the server-side time of acceptance (never trust a client clock) together with the document version, and return the rows in `getAccount()`. The version label is `LEGAL_DOCUMENT_VERSION` in `lib/legalVersion.ts` ("1.0").
+
+## 6. Lawyer consent (additive, `lawyer/lib/lawyerApi.ts`)
+
+The consent checkbox of L2 is now sent. Two optional fields were added; nothing was removed or renamed:
+
+```ts
+acceptInvitation(token, i: { displayName: string; firm: string; consent?: { termsVersion: string } }): Promise<void>
+getMe(): Promise<{ displayName: string; clients: number; pendingRequests: number; consent?: { termsVersion: string; acceptedAt: string } }>
+```
+
+Live mode: the server must store the consent with its own UTC time (never the client clock) in the same transaction as the account, reject the call without `consent` (`CONSENT_REQUIRED`), and return it from `getMe`. `registerLawyer` in `lawyer/lib/passkey.ts` does not forward `consent` yet. The version is `LAWYER_TERMS_VERSION` in `lawyer/lib/legal.ts` ("1.0"), covering the role and data documents.
