@@ -1,7 +1,7 @@
-import { BookOpen, CircleCheck, Clock, TriangleAlert, CircleX } from "lucide-react";
+import { BookOpen, CircleCheck, CircleDot, Clock, Minus, TriangleAlert, CircleX } from "lucide-react";
 import type { ReactNode } from "react";
 
-export type ChipStatus = "verified" | "warning" | "pending" | "read" | "failed";
+export type ChipStatus = "verified" | "warning" | "pending" | "read" | "failed" | "info" | "neutral";
 
 const config: Record<ChipStatus, { label: string; look: string; icon: ReactNode }> = {
   verified: { label: "Verified", look: "bg-ok-bg text-ok", icon: <CircleCheck size={14} strokeWidth={1.75} /> },
@@ -9,6 +9,8 @@ const config: Record<ChipStatus, { label: string; look: string; icon: ReactNode 
   pending: { label: "Pending", look: "bg-warn-bg text-warn", icon: <Clock size={14} strokeWidth={1.75} /> },
   read: { label: "Read", look: "bg-warn-bg text-warn", icon: <BookOpen size={14} strokeWidth={1.75} /> },
   failed: { label: "Failed", look: "bg-danger-bg text-danger", icon: <CircleX size={14} strokeWidth={1.75} /> },
+  info: { label: "In progress", look: "bg-info-bg text-info", icon: <CircleDot size={14} strokeWidth={1.75} /> },
+  neutral: { label: "Not started", look: "bg-surface text-muted", icon: <Minus size={14} strokeWidth={1.75} /> },
 };
 
 type StatusChipProps = {
