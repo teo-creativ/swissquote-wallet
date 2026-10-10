@@ -1,4 +1,5 @@
 // Swissquote console shell (desktop, simulated back-office). Design: app/console/design.md.
+import Link from "next/link";
 import { Bell, Lock, LogOut, PhoneCall, ShieldCheck, ShieldHalf, User, Wallet, KeyRound } from "lucide-react";
 import type { Metadata } from "next";
 import { Banner, Logo, Sidebar, SimulatedPill } from "@/components/ui";
@@ -26,6 +27,19 @@ function TopStrip() {
   );
 }
 
+// Same pattern as the mobile layout. The cookie line is true to lib/console.auth.ts: one session cookie, nothing else.
+function ConsoleFooter() {
+  return (
+    <footer className="border-t border-line bg-white px-6 py-3 text-center text-xs text-muted">
+      Student prototype. Not an official Swissquote product. Testnet only: no real funds.
+      <br />This console sets one session cookie, strictly necessary to keep you signed in. Nothing else.
+      <br />
+      <Link href="/legal/cookies" className="inline-flex min-h-11 items-center px-2 underline">Cookies</Link>
+      <Link href="/legal/notice" className="inline-flex min-h-11 items-center px-2 underline">Legal notice</Link>
+    </footer>
+  );
+}
+
 export default async function ConsoleLayout({ children }: { children: React.ReactNode }) {
   if (!(await isAuthed())) {
     return (
@@ -34,6 +48,7 @@ export default async function ConsoleLayout({ children }: { children: React.Reac
         <main className="flex flex-1 items-center justify-center p-6">
           <LoginForm configured={gateConfigured()} />
         </main>
+        <ConsoleFooter />
       </div>
     );
   }
@@ -101,6 +116,7 @@ export default async function ConsoleLayout({ children }: { children: React.Reac
             </Banner>
             {children}
           </main>
+          <ConsoleFooter />
         </div>
       </div>
     </div>
