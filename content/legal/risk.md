@@ -25,7 +25,7 @@ Holding your own keys gives you control, and it also gives you responsibility. T
 
 ## Risks linked to the lawyer and to Swissquote
 
-- Your wallet needs two of three shares. Your lawyer and Swissquote together hold two shares. If both acted together against your interest, they could move your assets. This is why recovery has an identity check, a delay you can cancel and a record of every step. These safeguards reduce the risk and do not remove it.
+- Your wallet needs two of three shares. Your lawyer and Swissquote together hold two shares. If both acted together against your interest, they could move your assets. This is why recovery has an identity check, a delay you can cancel and a record of every step. These safeguards reduce the risk and do not remove it. If Swissquote and your lawyer both act against you, or are both compromised, a thief does not need to go through recovery: the two shares they hold are enough to sign.
 - If your lawyer becomes unavailable, daily signing and recovery may stop until another way is available.
 - If Swissquote's services stop permanently, you can still recover your assets with your exit kit and your lawyer, as long as you have created the kit and keep it with its passphrase.
 - If two of the three parties fail at once, for example you lose your phone and your lawyer disappears, your assets may be lost permanently.
@@ -39,6 +39,7 @@ Holding your own keys gives you control, and it also gives you responsibility. T
 ## Legal and regulatory risk
 
 - Rules on crypto-assets, on the role of lawyers and on transfers to self-hosted wallets can change. Some features could be restricted in the future.
+- Authorities may classify one of the parties as a custodian of your assets. This could lead to the service being changed, restricted or stopped.
 - Transfers may be refused or delayed for compliance reasons, for example a sanctions match.
 
 ## Third-party applications

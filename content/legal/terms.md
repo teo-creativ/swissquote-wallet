@@ -26,7 +26,7 @@ The prototype is meant for adult clients whose identity has already been verifie
 
 ## 5. Transfers, limits and checks
 
-Your lawyer may set limits for your account, such as an amount per transfer and a number of transfers per day. A transfer above a limit, or to a recipient not yet approved, needs your lawyer's approval. A transfer that is not approved within 48 hours is cancelled and nothing is written to the blockchain. Transfers to addresses on a sanctions list are refused. These checks reduce risk. They do not guarantee that a transfer is safe or lawful.
+Your lawyer may set limits for your account, such as an amount per transfer and a number of transfers per day. You can see your limits in the app, and you are told when they change. A transfer above a limit, or to a recipient not yet approved, needs your lawyer's approval. A transfer that is not approved within 48 hours is cancelled and nothing is written to the blockchain. Transfers to addresses on a sanctions list are refused. These checks reduce risk. They do not guarantee that a transfer is safe or lawful.
 
 ## 6. Network fees
 
@@ -52,6 +52,10 @@ We may change these terms. The version you accepted is recorded with the date of
 
 Swiss law applies, excluding conflict-of-law rules. The place of jurisdiction is Lausanne, subject to mandatory rules that let a consumer sue at their own place of residence.
 
-## 12. Contact
+## 12. Data
+
+Your data is processed as described in the Privacy policy, including by providers that may be located outside Switzerland.
+
+## 13. Contact
 
 Questions about these terms: contact the project team through the repository page of the project.
