@@ -8,10 +8,18 @@ const who = process.argv[2] as `0x${string}` | undefined;
 const c = createPublicClient({ chain: baseSepolia, transport: http(rpc) });
 const abi = parseAbi(["function symbol() view returns (string)", "function decimals() view returns (uint8)", "function balanceOf(address) view returns (uint256)"]);
 
-const chainId = await c.getChainId();
-const [symbol, decimals] = await Promise.all([c.readContract({ address: usdc, abi, functionName: "symbol" }), c.readContract({ address: usdc, abi, functionName: "decimals" })]);
-console.log({ rpc, chainId, expectedChainId: 84532, usdc, symbol, decimals, ok: chainId === 84532 && symbol === "USDC" && decimals === 6 });
-if (who) {
-  console.log("ETH :", formatUnits(await c.getBalance({ address: who }), 18));
-  console.log("USDC:", formatUnits(await c.readContract({ address: usdc, abi, functionName: "balanceOf", args: [who] }), 6));
+async function main() {
+  const chainId = await c.getChainId();
+  const [symbol, decimals] = await Promise.all([c.readContract({ address: usdc, abi, functionName: "symbol" }), c.readContract({ address: usdc, abi, functionName: "decimals" })]);
+  const host = new URL(rpc).host; // never print the full URL: it may contain an API key
+  console.log({ rpcHost: host, chainId, expectedChainId: 84532, usdc, symbol, decimals, ok: chainId === 84532 && symbol === "USDC" && decimals === 6 });
+  if (who) {
+    console.log("ETH :", formatUnits(await c.getBalance({ address: who }), 18));
+    console.log("USDC:", formatUnits(await c.readContract({ address: usdc, abi, functionName: "balanceOf", args: [who] }), 6));
+  }
 }
+
+main().catch((e) => {
+  console.error("check-chain failed:", e instanceof Error ? e.message.split("\n")[0] : "unknown error");
+  process.exit(1);
+});

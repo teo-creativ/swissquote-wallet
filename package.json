@@ -14,6 +14,7 @@
     "sync-shared": "tsx scripts/sync-shared.ts",
     "check-shared": "tsx scripts/sync-shared.ts --check",
     "gen-secrets": "tsx scripts/gen-secrets.ts",
+    "setup-env": "tsx scripts/setup-env.ts",
     "check-secrets": "bash scripts/check-secrets.sh",
     "check-chain": "tsx scripts/check-chain.ts",
     "gen-keypair": "tsx scripts/gen-keypair.ts",
