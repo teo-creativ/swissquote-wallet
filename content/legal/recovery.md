@@ -20,13 +20,13 @@ Recovery cannot happen without all three of these steps. Swissquote alone cannot
 
 ## 4. Waiting period and cancellation
 
-After approval, a waiting period starts. In this prototype it lasts two minutes so it can be demonstrated. In a real product it would be 24 hours. During this period:
+Once your identity is verified, a waiting period starts. In this prototype it lasts two minutes so it can be demonstrated. In a real product it would be 24 hours. During this period:
 
 - you can cancel the recovery at any time from any device where you are signed in;
 - your lawyer can also cancel it;
 - alerts are sent through the app and the lawyer portal, and never by email.
 
-The transfer to your new wallet only happens when the waiting period ends and has not been cancelled. Both the lawyer service and the Swissquote service check the waiting period on their own.
+The transfer to your new wallet only happens when your lawyer has approved, the waiting period has ended and the recovery has not been cancelled. Both the lawyer service and the Swissquote service check the waiting period on their own.
 
 ## 5. If an attacker tries
 
