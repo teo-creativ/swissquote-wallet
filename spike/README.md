@@ -12,6 +12,7 @@ npx tsx s2.ts          # sign with pairs (0,1), (0,2), (1,2)
 npx tsx s3.ts          # negative tests, on a throwaway wallet
 npx tsx s4.ts          # prints the wallet address and balances, sends nothing
 npx tsx s4.ts --send   # sends 1 USDC on Base Sepolia (optional: --to 0x...)
+npx tsx s4.ts --verify 0x<tx hash>   # re-checks a mined transfer, sends nothing
 npx tsx s5.ts          # timing
 ```
 `s1.ts` does not replace an existing wallet unless you pass `--force`.
@@ -40,5 +41,15 @@ Versions: `@silencelaboratories/dkls-wasm-ll-node` 1.2.0, `viem` 2.57.4, `@noble
 | WASM init (3.4) | Call the WASM init first (web package) | The node package is CommonJS and loads its `.wasm` from disk at import. No init call. Works on Windows with plain `npx tsx`, no bundler. |
 | Extra API | Not listed | `SignSessionOTVariant` and `session.error()` exist. Not used. |
 
-## Results
-See the final report of the spike session for PASS/FAIL per step, durations and the transaction hash.
+## Results (2026-10-11, Windows 11 x64, Node 24.21.0, one process, no network between parties)
+| Step | Result | Detail |
+|---|---|---|
+| S1 keygen | PASS | 3 parties, threshold 2, same public key for all, about 2.3 s |
+| S2 signing | PASS | pairs (0,1), (0,2), (1,2) all produce a valid signature, about 150 ms each |
+| S3 negative tests | PASS | wrong hash rejected, tampered messages abort, consumed session refused |
+| S4 real transfer | PASS | 1 USDC sent by P1 + P2, signed in 183 ms, block 47950792 |
+| S5 timing and Windows | PASS | plain `npx tsx`, no bundler |
+
+Wallet `0xd52C3b0e3C79Fa92e0bdEE4B932E1514A2ac8e99`, transaction https://sepolia.basescan.org/tx/0x8b980054c7157fb0e8b57f0d8b4c103d7d9b9dcdf02b91eb9ce48bd19cb791d4
+
+Chain note for the app: a `latest` balance read right after the receipt returned the old balance on the first run (lagging RPC node). Read at the receipt block number, or rely on the Transfer event in the receipt.
