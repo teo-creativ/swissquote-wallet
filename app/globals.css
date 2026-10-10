@@ -23,14 +23,40 @@
   --color-info-bg: #EAF1FC;
   --color-brand-tint: #FDEEEA;   /* active nav pill, soft highlights */
   --color-line: #E3E6EE;
+  --color-dark: #474747;         /* dark pill: active tab, "Copy the invitation" */
   --font-display: "Outfit Variable", system-ui, sans-serif;
   --font-body: "Poppins", system-ui, sans-serif;
   --radius-pill: 9999px;
   --radius-card: 24px;
+  --radius-hero: 28px;
   --radius-sheet: 32px;
+  --shadow-float: 0 8px 24px rgba(38, 42, 51, 0.12);  /* tab bar and floating key card only */
+  --animate-sheet-in: sheet-in 200ms ease-out;
+  --animate-fade-in: fade-in 200ms ease-out;
+
+  @keyframes sheet-in {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+  }
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
 }
 
 html { background: #fff; }
 body { font-family: var(--font-body); color: var(--color-ink); -webkit-font-smoothing: antialiased; }
 h1, h2, h3 { font-family: var(--font-display); }
 :focus-visible { outline: 3px solid var(--color-ink); outline-offset: 2px; }
+
+/* Motion is decorative: switch it off when the user asks for less (design.md section 2).
+   The Spinner is exempt: it is the only sign that work is in progress, so it slows down instead (see Spinner.tsx). */
+@media (prefers-reduced-motion: reduce) {
+  *:not([data-spinner]), *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  [data-spinner] { animation-duration: 2s; }
+}
