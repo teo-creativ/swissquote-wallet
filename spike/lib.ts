@@ -47,13 +47,21 @@ type Session = { toBytes(): Uint8Array; free(): void };
 // Restore a session from bytes, run one call on it, serialize it back, free the WASM memory.
 function step<S extends Session, T>(restore: (b: Uint8Array) => S, state: Uint8Array[], i: number, fn: (s: S) => T): T {
   const session = restore(state[i]);
+  let out: T;
   try {
-    const out = fn(session);
+    out = fn(session);
     state[i] = session.toBytes();
-    return out;
-  } finally {
-    session.free();
+  } catch (err) {
+    // After some protocol errors free() itself throws; never let that hide the real error (banParty).
+    try {
+      session.free();
+    } catch {
+      // The session is unusable either way.
+    }
+    throw err;
   }
+  session.free();
+  return out;
 }
 
 export type KeygenResult = { shares: Uint8Array[]; publicKey: Uint8Array };
