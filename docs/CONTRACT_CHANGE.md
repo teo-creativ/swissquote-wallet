@@ -45,3 +45,7 @@ New route `GET /api/public-config` returns `{ "allowNoPrf": boolean }` only. No 
 ## 4. DKG rounds on C6 (optional)
 
 C6 shows three share cards with waiting / generating / stored. A live round counter ("round 2 of 5") needs more than `WalletStep`. Proposal: `createWallet(onProgress: (s: WalletStep, detail?: { round: number; of: number }) => void)`. The second argument is optional, so existing callers still compile. Until then no round number is shown.
+
+## 5. Consent record on `getAccount()` (additive)
+
+`Account` gets an optional field `consents?: { document: string; version: string; acceptedAt: string }[]` (`acceptedAt` is ISO 8601, UTC). The Security screen reads it to show "Accepted on ...". No function signature changed. In live mode `registerAccount` must store the server-side time of acceptance (never trust a client clock) together with the document version, and return the rows in `getAccount()`. The version label is `LEGAL_DOCUMENT_VERSION` in `lib/legalVersion.ts` ("1.0").

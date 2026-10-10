@@ -11,6 +11,8 @@ export interface Account {
   lawyer: { status: "none" | "invited" | "accepted"; displayName?: string };
   devices: Device[]; exitKitCreatedAt: string | null;
   recovery: { id: string; status: string } | null; policy?: PolicyView;
+  /** Accepted legal documents with the UTC acceptance time (ISO 8601). Additive, see docs/CONTRACT_CHANGE.md. */
+  consents?: { document: string; version: string; acceptedAt: string }[];
 }
 export interface TransferCheck { outcome: "instant" | "lawyer" | "refused"; reasons: Reason[] }
 export interface TxView { requestId: string; status: TxStatus; outcome: "AUTO" | "LAWYER" | "REFUSED"; reasons: Reason[]; approvalExpiresAt?: string; txHash?: string; explorerUrl?: string }
