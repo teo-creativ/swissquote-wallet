@@ -2,7 +2,7 @@
 
 **A self-custody wallet that Swissquote could launch: the client signs with their phone and face, a lawyer of their choice protects large or unusual moves, and Swissquote can never act alone.** The wallet is a **Safe 2-of-3 smart account** on Base Sepolia with three owner keys: the client's phone (P1), the client's lawyer (P2) and Swissquote (P3). Any two can sign; no single holder can. There is no seed phrase.
 
-> **It is a Safe smart account, not MPC.** MPC (DKLs23) was our first design and is documented as the target, but it is **not implemented**. Everything below that says "key" means one of three ordinary owner keys of a Safe.
+> **It is a Safe smart account, not MPC.** MPC (DKLs23) was our first design and is documented as the target, but it is **not in the app**: it exists only as research scripts in [`research/mpc`](research/mpc) (section 16). Everything below that says "key" means one of three ordinary owner keys of a Safe.
 > **Student prototype. Not an official Swissquote product. Testnet only (Base Sepolia): no real funds.**
 > Made for the Swissquote track of the BSA x EPFL hackathon (10-11 October 2026).
 
@@ -16,7 +16,7 @@
 
 **Read this first, honestly.** In live mode (`NEXT_PUBLIC_SQKEYS_MODE=live`) the wallet, the passkeys, the three owner keys, the sponsored gas, the lawyer's decisions, the transfers, the recovery and the console state are **real** and verified end to end on Base Sepolia (section 14). Only **three things are simulated, and each says so on screen with a "Simulated" pill: the Swissquote login, the identity check (KYC) and the bank account (CHF balance and rate)**. Mock mode still exists for design work and unit tests (`/dev/mock`).
 
-Contents: [2 Tour](#2-the-demo-script) · [3 Real vs simulated](#3-what-is-real-and-what-is-simulated) · [4 Architecture](#4-architecture) · [5 Custody and threats](#5-custody-model-decision) · [6 Wallet creation](#6-wallet-creation) · [7 Authentication](#7-authentication) · [8 Recovery and exit](#8-recovery-and-exit) · [9 Legal](#9-legal-feasibility) · [10 Business](#10-business-case) · [11 Gas sponsoring](#11-gas-sponsoring) · [12 Run locally](#12-run-it-locally) · [13 Deploy](#13-deployment) · [14 Tests](#14-test-plan-and-results) · [15 Limits](#15-known-limitations-and-next-steps) · [16 AI tools](#16-ai-tools-used) · [17 Team, repo, licences](#17-team-roles-repository-map-licences)
+Contents: [2 Tour](#2-the-demo-script) · [3 Real vs simulated](#3-what-is-real-and-what-is-simulated) · [4 Architecture](#4-architecture) · [5 Custody and threats](#5-custody-model-decision) · [6 Wallet creation](#6-wallet-creation) · [7 Authentication](#7-authentication) · [8 Recovery and exit](#8-recovery-and-exit) · [9 Legal](#9-legal-feasibility) · [10 Business](#10-business-case) · [11 Gas sponsoring](#11-gas-sponsoring) · [12 Run locally](#12-run-it-locally) · [13 Deploy](#13-deployment) · [14 Tests](#14-test-plan-and-results) · [15 Limits](#15-known-limitations-and-next-steps) · [16 Research: MPC and Bitcoin](#16-research-mpc-and-bitcoin) · [17 AI tools](#17-ai-tools-used) · [18 Team, repo, licences](#18-team-roles-repository-map-licences)
 
 ---
 
@@ -99,7 +99,7 @@ Separation rules (enforced by folders and `scripts/check-secrets.sh`): the clien
 
 ## 5. Custody model decision
 
-**Chosen: a Safe 2-of-3 smart account** (CDC plan B, section 3.9). The brief allows Safe. It gives a real address, real USDC, gas sponsoring and a recovery that keeps the same address. **MPC DKLs23 was the first choice and is not implemented**: we could not prove it in the time; it stays documented as the target design.
+**Chosen: a Safe 2-of-3 smart account** (CDC plan B, section 3.9). The brief allows Safe. It gives a real address, real USDC, gas sponsoring and a recovery that keeps the same address. **MPC DKLs23 was the first choice and is not in the app**: the integration was not finished in time. It works as standalone research scripts (section 16) and stays documented as the target design.
 
 | Holder | Key | Lives | Used for |
 |---|---|---|---|
@@ -120,7 +120,7 @@ Separation rules (enforced by folders and `scripts/check-secrets.sh`): the clien
 |---|---|
 | Plain self-custody with a seed phrase | Clients lose or leak phrases |
 | Custodial | That is the existing Swissquote Wallet |
-| MPC threshold signatures | Our first design; not proven in time, not implemented |
+| MPC threshold signatures | Our first design; works as research scripts (section 16), not integrated in the app in time |
 
 ### Threat model (Safe 2-of-3)
 
@@ -323,11 +323,24 @@ Secrets are never committed or printed; pair secrets are exchanged in person. Fu
 - The three simulated parts (Swissquote login, identity check, CHF account) are demo stand-ins by design.
 - No audit, no formal proof.
 
-Next steps, in order: verify on an iPhone and a Redmi; run the exit from the kit; database-level lock for policy evaluations; ERC-4337 sponsoring if wanted; MPC as a research track.
+Next steps, in order: verify on an iPhone and a Redmi; run the exit from the kit; database-level lock for policy evaluations; ERC-4337 sponsoring if wanted; MPC stays a research track (section 16).
 
 ---
 
-## 16. AI tools used
+## 16. Research: MPC and Bitcoin
+
+**The live demo is a Safe 2-of-3 smart account. It is not MPC**, and it has no Bitcoin feature. What follows is research code in [`research/mpc`](research/mpc), with its own `package.json`: it is not imported by any app, not built with them and not deployed.
+
+- **MPC (DKLs23 threshold ECDSA).** Standalone scripts and tests show a 3-party key generation, a signature by any two of the three parties, one real USDC transfer on Base Sepolia signed that way, two node processes talking over HMAC-signed HTTP on one machine, and tamper tests. It was **not integrated in the app** and **not verified on Vercel**; the demo uses a Safe because the MPC integration was not finished in time. Details and limits: [`research/mpc/README.md`](research/mpc/README.md).
+- **Bitcoin.** Bitcoin signing exists **only as a research script**: [`research/mpc/bitcoin`](research/mpc/bitcoin) builds a native SegWit (P2WPKH) spend on Bitcoin testnet4 and signs it with two of three DKLs23 parties. It is checked locally only: **no Bitcoin transaction has been broadcast yet** (the address must first be funded from a faucet). No Taproot, no fee estimation, no UTXO management. Details: [`research/mpc/bitcoin/README.md`](research/mpc/bitcoin/README.md).
+
+```
+cd research/mpc && npm ci
+npm test              # node core and Bitcoin tests
+npm run btc:dryrun    # Bitcoin spend with a fake UTXO, checked locally, nothing is sent
+```
+
+## 17. AI tools used
 
 | Tool | Used for |
 |---|---|
@@ -338,12 +351,12 @@ Next steps, in order: verify on an iPhone and a Redmi; run the exit from the kit
 
 ---
 
-## 17. Team, roles, repository map, licences
+## 18. Team, roles, repository map, licences
 
 | Person | Role | Branch |
 |---|---|---|
 | Téo | Design and front: `components/ui/`, `app/console/`, client screens, lawyer screens; live mode of the client, lawyer and sq-mock in this branch | `teo/ui` |
-| Aaron | Logic, MPC research (not used), HMAC, store and recovery code reused in sq-mock | `aaron/logic` |
+| Aaron | Logic, MPC research (`research/mpc`, not used by the demo), HMAC, store and recovery code reused in sq-mock | `aaron/logic` |
 | Théotime | `sq-mock/` scaffold, `exit/`, business case, the lawyer role in the demo | `theotime/sq` |
 
 ```
@@ -360,10 +373,11 @@ sq-mock/           Swissquote mock, P3 node, gas sponsor, bank   Vercel: sq-mock
 exit/              exit script                                   (README only)
 shared/            source of shared code (Safe helpers, policy, HMAC, AES-GCM, db layer), copied by `npm run sync-shared`
 spike/             Safe spike and on-chain checks of the shared code
+research/mpc/      MPC (DKLs23) and Bitcoin research scripts, own package.json, not built, not deployed
 sql/ lawyer/sql/ sq-mock/sql/   database schemas with RLS (001 base, 002 Safe live)
 docs/              CDC_v3.1.md, SETUP_LIVE.md, LIVE_NOTES.md, LIVE_TEST_REPORT.md, CONTRACT_CHANGE.md, prompts/live/01-safe-live.md, ...
 ```
 
 Key documents: `docs/CDC_v3.1.md` (specification, in French), `docs/prompts/live/01-safe-live.md` (design of record for live mode), `docs/LIVE_NOTES.md` (decisions), `docs/CONTRACT_CHANGE.md` (signature and behavior notes for the other owners), `design.md`, `CLAUDE.md`.
 
-**Licences.** The Safe path uses open-source packages pinned to exact versions in each `package.json` (viem, @simplewebauthn, jose, Next.js). The MPC packages `@silencelaboratories/dkls-wasm-ll-web` and `-node` (1.2.0) remain in `package.json` from the first design but are **not used by live mode**; they are under the **Silence Laboratories Non-Commercial Use License Agreement**: commercial use needs a commercial licence. See [`NOTICE`](NOTICE), [`licenses/`](licenses/) and [`docs/THIRD_PARTIES.md`](docs/THIRD_PARTIES.md). This repository has no `LICENSE` file yet `[TEAM TO DECIDE]`.
+**Licences.** The Safe path uses open-source packages pinned to exact versions in each `package.json` (viem, @simplewebauthn, jose, Next.js). The MPC packages `@silencelaboratories/dkls-wasm-ll-web` and `-node` (1.2.0) remain in `package.json` from the first design but are **not used by live mode** (only by `research/mpc` and a WASM load check in the lawyer portal); they are under the **Silence Laboratories Non-Commercial Use License Agreement**: commercial use needs a commercial licence. See [`NOTICE`](NOTICE), [`licenses/`](licenses/) and [`docs/THIRD_PARTIES.md`](docs/THIRD_PARTIES.md). This repository has no `LICENSE` file yet `[TEAM TO DECIDE]`.
