@@ -11,6 +11,14 @@ export type Config = {
   /** Global number of drips per 24 h. */
   gasDripDailyCap: number;
   kycDelayMs: number;
+  /** Sponsor limits (the sponsor wallet pays all gas of the Safes). */
+  sponsorMaxDeploysPerDay: number;
+  sponsorMaxExecsPerDay: number;
+  sponsorMaxExecsPerSafePerDay: number;
+  /** Below this sponsor balance no sponsored action is accepted. */
+  sponsorMinBalanceWei: bigint;
+  /** Real USDC transfers from the demo wallet to a client Safe, per client and 24 h. */
+  bankMaxTransfersPerDay: number;
   /** Expected answer to the simulated banking question. Undefined means every identity check fails. */
   bankingAnswer: string | undefined;
 };
@@ -33,6 +41,11 @@ export function readConfig(env: Record<string, string | undefined> = process.env
     gasDripMinBalanceWei: wei(env.GAS_DRIP_MIN_BALANCE_WEI, 100_000_000_000_000n),
     gasDripDailyCap: positiveInt(env.GAS_DRIP_DAILY_CAP, 50),
     kycDelayMs: 2000,
+    sponsorMaxDeploysPerDay: positiveInt(env.SPONSOR_MAX_DEPLOYS_PER_DAY, 30),
+    sponsorMaxExecsPerDay: positiveInt(env.SPONSOR_MAX_EXECS_PER_DAY, 300),
+    sponsorMaxExecsPerSafePerDay: positiveInt(env.SPONSOR_MAX_EXECS_PER_SAFE_PER_DAY, 40),
+    sponsorMinBalanceWei: wei(env.SPONSOR_MIN_BALANCE_WEI, 5_000_000_000_000_000n),
+    bankMaxTransfersPerDay: positiveInt(env.BANK_MAX_TRANSFERS_PER_DAY, 10),
     bankingAnswer: env.SQ_DEMO_BANKING_ANSWER || undefined,
   };
 }

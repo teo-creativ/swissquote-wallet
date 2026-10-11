@@ -10,7 +10,11 @@ import { SANCTIONS_LIST_VERSION } from "./seed";
 import type { Store } from "./store";
 import type { Client } from "./types";
 
-export type Deps = { store: Store; chain: Chain; config: Config; now: Date; sleep: (ms: number) => Promise<void> };
+export type Deps = {
+  store: Store; chain: Chain; config: Config; now: Date; sleep: (ms: number) => Promise<void>;
+  /** Server environment (secrets such as SQ_SHARE_ENC_KEY). Defaults to process.env; tests inject their own. */
+  env?: Record<string, string | undefined>;
+};
 export type Input = Record<string, unknown>;
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -32,13 +36,13 @@ export function text(input: Input, key: string, max = 200): string {
   if (typeof v !== "string" || v.length === 0 || v.length > max) throw invalid(`Field ${key} is missing or invalid.`);
   return v;
 }
-function address(input: Input, key = "address"): Address {
+export function address(input: Input, key = "address"): Address {
   const v = text(input, key);
   if (!isAddress(v, { strict: false })) throw invalid(`Field ${key} is not a valid address.`);
   return v;
 }
-const lower = (a: string) => a.toLowerCase();
-const since24h = (now: Date) => new Date(now.getTime() - DAY_MS).toISOString();
+export const lower = (a: string) => a.toLowerCase();
+export const since24h = (now: Date) => new Date(now.getTime() - DAY_MS).toISOString();
 
 export async function clientBySqRef(store: Store, input: Input): Promise<Client> {
   const sqRef = text(input, "sqRef");

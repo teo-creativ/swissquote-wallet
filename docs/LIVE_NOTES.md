@@ -26,3 +26,11 @@ Result: 52 unit tests and the typecheck pass in `sq-mock/` as copied.
 ## To adapt (next steps)
 - Replace the `gas/drip` model by the sponsored paths of Slice A (`gas/deploy`, `gas/exec`).
 - Add the P3 owner key routes and `node/sign` using `releaseBlock`.
+
+## Step 3 (sq-mock, Slice A): decisions
+- HMAC format: the tested scheme of Aaron's `shared/hmac.ts` is kept (headers `x-sq-ts` ISO timestamp, `x-sq-nonce`, `x-sq-sig`; MAC over method, path with query, timestamp, nonce and body hash; 60 s skew; nonces claimed in the store). It replaces the `ts.METHOD.path.bodyhash` string of the design doc: same protection (authentication, freshness, replay), already implemented and tested.
+- `hmac.ts` was moved to the source folder `shared/` and synced; new shared files: `shared/safe.ts` (Safe address, EIP-712 hash, transfer and swapOwner builders, signature packing; checked against the chain by `spike/verify-shared.ts`) and `shared/share-crypto.ts` (AES-256-GCM sealing of owner keys, bound to the account by the AAD).
+- Recovery status is polled with `GET /api/recovery/status?recoveryId=` (no `/api/recovery/{id}` route).
+- P3 learns the lawyer approved from P2's signature over the swapOwner hash, so no second server-to-server secret between the lawyer and sq-mock is needed.
+- Cancel after P3 signed cannot revoke a signature already handed out: the delay is the protection, cancellation works during the delay.
+- The bank only sends to the client's own Safe, and requires the (simulated) identity check. Limit: 10 USDC per transfer, `BANK_MAX_TRANSFERS_PER_DAY` (default 10) per client.

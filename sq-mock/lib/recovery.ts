@@ -67,11 +67,24 @@ export async function recoveryCancel(deps: Deps, input: Input) {
 
 export async function recoveryStatus(deps: Deps, input: Input) {
   const check = await load(deps, input);
-  return {
+  const base = {
     identityVerified: check.outcome === "pass",
     identityFailed: check.outcome === "fail",
     releaseAfter: check.releaseAfter,
     cancelled: check.cancelledAt !== null,
+  };
+  if (!check.safeAddress) return base;
+  // Wallet (Safe) recovery: also tell the client where the recovery stands, so its screens poll the real state.
+  const blocked = releaseBlock(check, deps.now);
+  return {
+    ...base,
+    safeAddress: check.safeAddress,
+    newOwnerAddress: check.newOwnerAddress ?? null,
+    delayElapsed: check.releaseAfter !== null && deps.now.getTime() >= Date.parse(check.releaseAfter),
+    releaseBlockedBy: blocked,
+    p3Signed: check.p3SignedAt != null,
+    executed: check.usedAt !== null,
+    now: deps.now.toISOString(),
   };
 }
 

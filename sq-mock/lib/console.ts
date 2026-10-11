@@ -71,6 +71,19 @@ export async function consoleIdentityOutcome({ store, now }: Deps, input: Input)
   if (outcome !== "pass" && outcome !== "fail") throw new ApiError(400, "INVALID_INPUT", "Field outcome must be pass or fail.");
   if (!(await store.getClient(clientId))) throw new ApiError(404, "UNKNOWN_CLIENT", "Unknown client.");
   await store.updateClient(clientId, { identityOutcome: outcome });
+  await store.addOperatorAction({ action: "IDENTITY_OUTCOME_SET", clientId, recoveryId: null, detail: { outcome, simulated: true }, createdAt: now.toISOString() });
   await appendAudit(store, "IDENTITY_OUTCOME_SET", { clientId, outcome, simulated: true }, now);
   return { clientId, outcome, simulated: true };
+}
+
+export async function consoleOperatorActions({ store }: Deps) {
+  return { actions: await store.listOperatorActions(), simulated: true };
+}
+
+/** Wallets of the bank's clients with the sponsored transactions. Addresses and hashes only. */
+export async function consoleSafes({ store }: Deps) {
+  const safes = (await store.listSafeAccounts()).map((a) => ({
+    sqRef: a.sqRef, safeAddress: getAddress(a.safeAddress), owners: [a.p1Address, a.p2Address, a.p3Address].map((o) => getAddress(o)), deployTxHash: a.deployTxHash, createdAt: a.createdAt,
+  }));
+  return { safes };
 }

@@ -2,7 +2,7 @@
 // SupabaseStore (lib/store.supabase.ts, server only). The interface holds no business rule: rules live in lib/services.
 import { HMAC_NONCE_TTL_MS, type NonceStore } from "../src/shared/hmac";
 import type {
-  AuditEntry, Call, Client, ClientPatch, ComplianceAlert, GasDrip, IdentityCheck, IdentityCheckPatch, OwnershipProof, Transfer, WalletLink,
+  AuditEntry, Call, Client, ClientPatch, ComplianceAlert, GasDrip, IdentityCheck, IdentityCheckPatch, OperatorAction, OwnerShare, OwnershipProof, SafeAccount, SponsorAction, SponsorKind, Transfer, WalletLink,
 } from "./types";
 
 export interface Store extends NonceStore {
@@ -44,6 +44,23 @@ export interface Store extends NonceStore {
   updateIdentityCheck(recoveryId: string, patch: IdentityCheckPatch): Promise<void>;
   listIdentityChecks(): Promise<IdentityCheck[]>;
 
+  /** P3 owner key of an account. Resolves false when one already exists (idempotent creation). */
+  insertOwnerShareIfAbsent(share: OwnerShare): Promise<boolean>;
+  getOwnerShare(sqRef: string): Promise<OwnerShare | null>;
+
+  /** Resolves false when the account already has a Safe (or the address is taken). */
+  insertSafeAccountIfAbsent(account: SafeAccount): Promise<boolean>;
+  getSafeAccount(sqRef: string): Promise<SafeAccount | null>;
+  getSafeAccountByAddress(address: string): Promise<SafeAccount | null>;
+  listSafeAccounts(): Promise<SafeAccount[]>;
+
+  addSponsorAction(action: Omit<SponsorAction, "id">): Promise<void>;
+  /** Without a Safe address: every action of that kind since the date (global cap). */
+  countSponsorActionsSince(kind: SponsorKind, since: string, safeAddress?: string): Promise<number>;
+
+  addOperatorAction(action: Omit<OperatorAction, "id">): Promise<void>;
+  listOperatorActions(): Promise<OperatorAction[]>;
+
   getLastAuditHash(): Promise<string | null>;
   insertAudit(entry: Omit<AuditEntry, "id">): Promise<void>;
   listAudit(): Promise<AuditEntry[]>;
@@ -63,6 +80,10 @@ export class MemoryStore implements Store {
   private calls: Call[] = [];
   private checks = new Map<string, IdentityCheck>();
   private audit: AuditEntry[] = [];
+  private shares = new Map<string, OwnerShare>();
+  private safes = new Map<string, SafeAccount>();
+  private sponsor: SponsorAction[] = [];
+  private operator: OperatorAction[] = [];
   private seq = 0;
 
   async claim(nonce: string, now: Date) {
@@ -125,6 +146,31 @@ export class MemoryStore implements Store {
     if (c) this.checks.set(recoveryId, { ...c, ...patch });
   }
   async listIdentityChecks() { return newestFirst([...this.checks.values()]); }
+
+  async insertOwnerShareIfAbsent(share: OwnerShare) {
+    if (this.shares.has(share.sqRef)) return false;
+    this.shares.set(share.sqRef, { ...share });
+    return true;
+  }
+  async getOwnerShare(sqRef: string) { return this.shares.get(sqRef) ?? null; }
+
+  async insertSafeAccountIfAbsent(account: SafeAccount) {
+    const taken = [...this.safes.values()].some((a) => a.sqRef === account.sqRef || a.safeAddress === account.safeAddress);
+    if (taken) return false;
+    this.safes.set(account.sqRef, { ...account });
+    return true;
+  }
+  async getSafeAccount(sqRef: string) { return this.safes.get(sqRef) ?? null; }
+  async getSafeAccountByAddress(address: string) { return [...this.safes.values()].find((a) => a.safeAddress === address) ?? null; }
+  async listSafeAccounts() { return [...this.safes.values()]; }
+
+  async addSponsorAction(action: Omit<SponsorAction, "id">) { this.sponsor.push({ ...action, id: ++this.seq }); }
+  async countSponsorActionsSince(kind: SponsorKind, since: string, safeAddress?: string) {
+    return this.sponsor.filter((a) => a.kind === kind && a.createdAt >= since && (safeAddress === undefined || a.safeAddress === safeAddress)).length;
+  }
+
+  async addOperatorAction(action: Omit<OperatorAction, "id">) { this.operator.push({ ...action, id: ++this.seq }); }
+  async listOperatorActions() { return newestFirst(this.operator); }
 
   async getLastAuditHash() { return this.audit.at(-1)?.entryHash ?? null; }
   async insertAudit(entry: Omit<AuditEntry, "id">) { this.audit.push({ ...entry, id: ++this.seq }); }
