@@ -93,7 +93,7 @@ export default async function ConsoleLayout({ children }: { children: React.Reac
             <p className="min-w-0 truncate text-sm font-semibold">
               SQ Keys Admin Console
               <span className="mx-2 font-normal text-line">/</span>
-              <span className="text-xs font-normal uppercase tracking-wider text-muted">MPC multi-signature infrastructure</span>
+              <span className="text-xs font-normal uppercase tracking-wider text-muted">Safe 2-of-3 smart account</span>
             </p>
             <span className="ml-auto inline-flex h-7 shrink-0 items-center gap-2 rounded-md border border-info/30 bg-info-bg px-3 text-[11px] font-semibold uppercase tracking-wider text-info">
               <span className="size-1.5 rounded-full bg-info" aria-hidden="true" />

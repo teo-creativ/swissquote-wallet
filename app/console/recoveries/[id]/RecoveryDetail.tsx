@@ -178,7 +178,7 @@ export function RecoveryDetail({ initialRecovery, initialClient, serverNow }: Pr
           <CardTitle
             icon={<History size={20} strokeWidth={1.75} />}
             title="Timeline"
-            subtitle="Multi-party MPC authorisation"
+            subtitle="2-of-3 owner approval"
             aside={<span className="text-[11px] font-semibold uppercase tracking-wider text-muted">5 steps</span>}
           />
           <h2 id="timeline-title" className="sr-only">
@@ -238,7 +238,7 @@ export function RecoveryDetail({ initialRecovery, initialClient, serverNow }: Pr
             </div>
 
             <div>
-              <StepHeading n={3}>Co-sign and release share</StepHeading>
+              <StepHeading n={3}>Co-sign the recovery</StepHeading>
               {done ? (
                 <div className="flex min-h-14 items-center justify-center gap-2 rounded-pill bg-ok-bg text-lg font-semibold text-ok">
                   <CheckCircle2 size={22} strokeWidth={1.75} aria-hidden="true" />
@@ -253,7 +253,7 @@ export function RecoveryDetail({ initialRecovery, initialClient, serverNow }: Pr
                     aria-describedby="cosign-reason"
                     onClick={() => run(() => cosignReleaseAction(recovery.id), setRecovery)}
                   >
-                    Co-sign and release share
+                    Co-sign the recovery
                   </Button>
                   <p id="cosign-reason" className="mt-2 flex items-start gap-1.5 text-sm text-muted">
                     {v.cosignBlockedReason ?? "All conditions are met: identity verified, lawyer approved, safety delay elapsed."}
@@ -266,14 +266,14 @@ export function RecoveryDetail({ initialRecovery, initialClient, serverNow }: Pr
 
             <div className="rounded-card bg-surface p-4">
               <div className="flex items-center justify-between gap-2">
-                <h3 className="text-sm font-semibold">Key share</h3>
+                <h3 className="text-sm font-semibold">Owner key</h3>
                 {done ? <StatusChip status="verified">Signed and locked</StatusChip> : <StatusChip status="neutral">Not signed</StatusChip>}
               </div>
               <dl className="mt-3 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 rounded-xl bg-white p-3 font-mono text-xs">
                 <dt className="text-muted">Party</dt>
                 <dd className="text-right">P3 (Swissquote)</dd>
                 <dt className="text-muted">Algorithm</dt>
-                <dd className="text-right">DKLs23 · ECDSA secp256k1</dd>
+                <dd className="text-right">Safe owner key · ECDSA secp256k1</dd>
                 <dt className="text-muted">Operator</dt>
                 <dd className="text-right">SQ-CH-NODE-04 (simulated)</dd>
                 <dt className="text-muted">Timestamp</dt>

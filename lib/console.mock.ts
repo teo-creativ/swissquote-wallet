@@ -135,7 +135,7 @@ export async function setNextIdentityOutcome(clientId: string, outcome: Identity
   return { ...c };
 }
 
-/** Releases Swissquote's share (P3). Enforces the same rules as the button: the node checks them again on its own. */
+/** Co-signs the recovery with Swissquote's owner key (P3). Enforces the same rules as the button: the node checks them again on its own. */
 export async function cosignRelease(id: string): Promise<Recovery> {
   const r = store.recoveries.find((x) => x.id === id);
   if (!r) throw new Error("Recovery not found.");
@@ -225,7 +225,7 @@ export async function listAlerts(): Promise<ComplianceAlert[]> {
         severity: "info",
         kind: "recovery_completed",
         clientId: r.clientId,
-        message: "Swissquote co-signed the release of its share.",
+        message: "Swissquote co-signed the recovery with its owner key.",
       });
     }
   }
