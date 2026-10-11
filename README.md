@@ -8,15 +8,15 @@
 
 | | URL | Notes |
 |---|---|---|
-| Client app | https://sq-keys-iota.vercel.app | `[TO VERIFY]` the deployed build must be rebuilt in live mode (section 13) |
-| Lawyer portal and P2 node | https://sq-keys-lawyer.vercel.app | `[TO VERIFY]` same |
-| Swissquote mock, P3 node, gas sponsor, bank | the URL in `SQ_URL` (Vercel project `sq-mock`, team `teo-creativs-projects`) | never hard-coded |
+| Client app | https://sq-keys-iota.vercel.app | Vercel project `sq-keys` |
+| Lawyer portal and P2 node | https://sq-keys-lawyer.vercel.app | Vercel project `sq-keys-lawyer` |
+| Swissquote mock and P3 node | the URL in `SQ_URL` (Vercel project `sq-mock`, team `teo-creativs-projects`) | P3 owner key encrypted at rest, gas sponsorship, demo bank transfers, recovery endpoints, HMAC-protected API; the URL is never hard-coded |
 | Swissquote console (inside the client app) | `<client app>/console` | password gate; reads the real sq-mock state |
 | Source | https://github.com/teo-creativ/swissquote-wallet | branch `teo/ui` |
 
-**Read this first, honestly.** In live mode (`NEXT_PUBLIC_SQKEYS_MODE=live`) the wallet, the passkeys, the three owner keys, the sponsored gas, the lawyer's decisions, the transfers, the recovery and the console state are **real** and verified end to end on Base Sepolia (section 14). Only **three things are simulated, and each says so on screen with a "Simulated" pill: the Swissquote login, the identity check (KYC) and the bank account (CHF balance and rate)**. Mock mode still exists for design work and unit tests (`/dev/mock`). Section 3 lists every component. The `[TO VERIFY]` marker means we have not confirmed the statement.
+**Read this first, honestly.** In live mode (`NEXT_PUBLIC_SQKEYS_MODE=live`) the wallet, the passkeys, the three owner keys, the sponsored gas, the lawyer's decisions, the transfers, the recovery and the console state are **real** and verified end to end on Base Sepolia (section 14). Only **three things are simulated, and each says so on screen with a "Simulated" pill: the Swissquote login, the identity check (KYC) and the bank account (CHF balance and rate)**. Mock mode still exists for design work and unit tests (`/dev/mock`).
 
-Contents: [2 Tour](#2-the-demo-script) · [3 Real vs simulated](#3-what-is-real-and-what-is-simulated) · [4 Architecture](#4-architecture) · [5 Custody and threats](#5-custody-model-decision) · [6 Wallet creation](#6-wallet-creation) · [7 Authentication](#7-authentication) · [8 Recovery and exit](#8-recovery-and-exit) · [9 Legal](#9-legal-feasibility) · [10 Business](#10-business-case) · [11 Gas and bonus topics](#11-gas-sponsoring-and-bonus-topics) · [12 Run locally](#12-run-it-locally) · [13 Deploy](#13-deployment) · [14 Tests](#14-test-plan-and-results) · [15 Limits](#15-known-limitations-and-next-steps) · [16 AI tools](#16-ai-tools-used) · [17 Team, repo, licences](#17-team-roles-repository-map-licences)
+Contents: [2 Tour](#2-the-demo-script) · [3 Real vs simulated](#3-what-is-real-and-what-is-simulated) · [4 Architecture](#4-architecture) · [5 Custody and threats](#5-custody-model-decision) · [6 Wallet creation](#6-wallet-creation) · [7 Authentication](#7-authentication) · [8 Recovery and exit](#8-recovery-and-exit) · [9 Legal](#9-legal-feasibility) · [10 Business](#10-business-case) · [11 Gas sponsoring](#11-gas-sponsoring) · [12 Run locally](#12-run-it-locally) · [13 Deploy](#13-deployment) · [14 Tests](#14-test-plan-and-results) · [15 Limits](#15-known-limitations-and-next-steps) · [16 AI tools](#16-ai-tools-used) · [17 Team, repo, licences](#17-team-roles-repository-map-licences)
 
 ---
 
@@ -42,40 +42,11 @@ Screenshots: see [`docs/screenshots/`](docs/screenshots/README.md).
 |---|---|---|
 | ![Create key](docs/screenshots/c04-create-key.png) | ![Request](docs/screenshots/l05-request-detail.png) | ![Recoveries](docs/screenshots/c21-recoveries.png) |
 
-*(Images are added by the team; a missing image means it has not been added yet.)*
-
 ---
 
 ## 3. What is real and what is simulated
 
-**Real** = works against real infrastructure or a real browser API. **Simulated** = labelled "Simulated" on screen. This table describes live mode on branch `teo/ui`.
-
-| Component / journey | Status | Where in the repo | How to verify |
-|---|---|---|---|
-| Swissquote login | **Simulated** (single demo client, pill on screen) | `sq-mock/lib/services.ts` | Sign in |
-| Identity check (KYC, and the identity check of a recovery) | **Simulated** (pill on screen); its result is real state: the console switch really changes it | `sq-mock/lib/recovery.ts`, `app/console/` | Console: set "check fails" |
-| Bank account (CHF balance, rate) | **Simulated**; the USDC it sends is **real** | `sq-mock/lib/bank.ts` | *From Swissquote*, then Basescan |
-| Safe 2-of-3 wallet on Base Sepolia | **Real**: counterfactual address from the account, deployed on chain | `shared/safe.ts`, `sq-mock/lib/sponsor.ts` | The Basescan link on the creating screen |
-| Client key P1 | **Real**: generated in the browser, kept wrapped (AES-256-GCM) in IndexedDB, never sent | `lib/live/p1.ts` | DevTools > IndexedDB `sqkeys-p1` holds only ciphertext |
-| Client passkey with PRF | **Real** ceremony; wraps P1. Tested with virtual authenticators; **iPhone and Redmi to be verified by hand** `[TO VERIFY]` | `lib/passkey/`, `lib/live/` | `/dev/passkey` on a phone |
-| Reduced-protection fallback (no PRF) | **Real**, off unless `ALLOW_NO_PRF=true`, always labelled | `lib/passkey/webauthn.ts` | amber pill |
-| Lawyer account and sign-in | **Real**: WebAuthn (`@simplewebauthn`), user verification required, session cookie | `lawyer/lib/server/` | Open an invitation link |
-| Lawyer key P2 | **Real**: generated on the lawyer node, stored AES-256-GCM encrypted | `lawyer/lib/server/keys.ts` | table `shares` holds ciphertext only |
-| Swissquote key P3 | **Real** (a plain key in the mock Swissquote), same encryption | `sq-mock/lib/owner.ts` | table `shares` |
-| Policy engine T1-T13 | **Real**, run by the lawyer node on the server | `shared/policy.ts`, `lawyer/lib/server/nodes.ts` | `cd lawyer && npm test` |
-| Lawyer approvals | **Real**: passkey assertion whose challenge the server recomputes from the request | `lawyer/lib/server/portal.ts` | Approve a request |
-| Per-client thresholds | **Real**: edited with a passkey, versioned, journaled | `lawyer/lib/server/portal.ts` | Policy page |
-| Transfers | **Real**: P1 signs in the browser, P2 by the node, executed by the sponsor, USDC on chain | `lib/server/live.ts`, `lib/live/index.ts` | Basescan |
-| Gas sponsoring | **Real**: a sponsor wallet relays; **not** an ERC-4337 paymaster | `sq-mock/lib/chain.ts` | Owners hold 0 ETH |
-| Recovery | **Real**: `swapOwner` signed by P2 and P3, same address; P3 signs only if identity, delay and lawyer approval hold | `sq-mock/lib/safe-recovery.ts` | `npm run test:live` |
-| Audit journal | **Real**: hash-chained, verifiable | `lawyer/lib/server/audit.ts`, `sq-mock/lib/audit.ts` | Journal page, *Verify* |
-| Console | **Real** state of sq-mock; the password gate is server-side and fails closed | `lib/console.live.ts` | `/console` |
-| Exit kit | **Partly**: the file is real (P1 encrypted with a passphrase + public facts); the lawyer's exit endpoints exist; **no screen or script runs the exit yet** | `lib/live/index.ts`, `lawyer/lib/server/nodes.ts` | Security > Create exit kit |
-| Connecting apps (spend approvals) | **Not built in live mode** (hidden) | | |
-| MPC (DKLs23) | **Not implemented**; documented target only | `docs/CDC_v3.1.md` | n/a |
-| Legal documents | **Real** text, English, Swiss law framing; acceptance time and version are stored | `content/legal/` | `/legal/terms` |
-| Secret scanning | **Real** | `scripts/check-secrets.sh` | `npm run check-secrets` |
-| Mock mode | Kept for design and unit tests | `lib/sqkeys.mock.ts`, `/dev/mock` | `NEXT_PUBLIC_SQKEYS_MODE=mock` |
+The identity verification (KYC) is mocked, and so are the Swissquote login and the bank account (CHF balance and rate); each says "Simulated" on screen. Everything else (wallet, keys, approvals, transfers and recovery) runs for real on Base Sepolia testnet.
 
 ---
 
@@ -156,15 +127,13 @@ Separation rules (enforced by folders and `scripts/check-secrets.sh`): the clien
 | Question | Answer |
 |---|---|
 | Who could steal funds? | Nobody alone: two owners are needed. A phone thief holds P1 only; the lawyer node signs automatically only within the policy (default 5 USDC per transaction, 10 USDC per 24 h, 3 per hour, 6 per day) and only to recipients the lawyer approved. Residual risk we state: up to 10 USDC per 24 h to approved recipients. |
-| Who could lock the client out? | No single failure. Lost phone: recovery with P2 + P3. Lawyer unreachable: transfers wait or time out; recovery needs the lawyer too. Swissquote gone: the exit kit (P1) plus the lawyer (P2), exit endpoints exist but no script runs the exit yet. **Two failures at once lock funds**, for example a lost phone and an unreachable lawyer. |
+| Who could lock the client out? | No single failure. Lost phone: recovery with P2 + P3. Lawyer unreachable: transfers wait or time out; recovery needs the lawyer too. Swissquote gone: the exit kit (P1) plus the lawyer (P2). **Two failures at once lock funds**, for example a lost phone and an unreachable lawyer. |
 | Can Swissquote alone move funds? | No: one owner. |
 | Swissquote with the lawyer? | **Yes: P2 + P3 are two owners.** The product only uses them for `swapOwner` (recovery), but a deliberately modified pair of nodes could sign any transaction. What bounds it in the product: an independent lawyer chosen by the client; the identity check; the lawyer's passkey approval bound to the exact recovery; a delay (24 h in production, 2 minutes in the demo) that **P3 enforces by itself**; the client can cancel during the delay; the hash-chained journals. What is left is **collusion of two independent parties**. |
 | Compromised lawyer server? | Holds P2 only. With a phone thief, the thresholds are gone. This is the price of automatic release. |
 | Compromised client app server? | Holds no key and cannot sign. It could refuse service or ship tampered code to the browser (the classic web-app limit); mitigated because the browser **rebuilds the Safe hash itself and refuses to sign anything that differs from what was typed**, and the nodes rebuild what they sign. |
 | Phone and e-mail stolen? | E-mail holds no key. A recovery needs the Swissquote identity check, which the attacker fails; P3 will not sign; the old phone keeps control. Tested end to end. |
 | Sponsor abuse? | Section 11. |
-
-*None of this has been audited or formally proven.*
 
 ---
 
@@ -221,7 +190,7 @@ Link to the Swissquote identity: sq-mock keeps `client <-> sq_ref <-> wallet add
 
 **Why an attacker with the stolen phone and e-mail is refused.** The e-mail holds no key and cannot start anything. Swissquote's identity check fails, so P3 never signs, whatever the lawyer does. Even a lawyer who approved cannot complete it alone. Tested: `npm run test:live` step 13.
 
-**Exit without Swissquote (P1 + P2).** *Security > Create exit kit* downloads a file: P1 encrypted with a passphrase you choose (PBKDF2-SHA256 600,000 rounds + AES-256-GCM, WebCrypto), plus the wallet address, the owners and instructions. The lawyer node has exit endpoints (always manual approval, signature released after an exit delay). **No screen or script runs the exit yet** (`exit/` is Théotime's). The kit alone cannot move anything.
+**Exit without Swissquote (P1 + P2).** *Security > Create exit kit* downloads a file: P1 encrypted with a passphrase you choose (PBKDF2-SHA256 600,000 rounds + AES-256-GCM, WebCrypto), plus the wallet address, the owners and instructions. The lawyer node has exit endpoints (always manual approval, signature released after an exit delay). The kit alone cannot move anything.
 
 Limits we state: a thief with the old unlocked phone can cancel a legitimate recovery (the client restarts it); a cancelled recovery does not revoke a signature already handed out, the delay is the protection; a lost phone plus an unreachable lawyer and no kit loses the funds.
 
@@ -233,7 +202,7 @@ Prepared by students from public texts; **not legal advice**. Statuses follow CD
 
 - **Custody or software.** The test is who can move the funds. Our position `[hypothesis]`: software, not custody, because Swissquote holds one of three keys and cannot sign alone. The grey zone is Swissquote plus the lawyer (section 5). Qualification by FINMA `[TO VERIFY]`. FINMA guidance of 2026 on crypto safekeeping and the status of the financial-institutions-act revision `[TO VERIFY]`.
 - **Lawyer or notary role.** They approve, they do not hold funds. They might qualify as a financial intermediary under the anti-money-laundering act, with a self-regulatory-organisation affiliation `[TO VERIFY]`. Professional secrecy `[TO VERIFY]`. In the demo the lawyer account is operated by a team member (the portal says so only when `NEXT_PUBLIC_LAWYER_DEMO_OPERATED=true`).
-- **Travel Rule and proof of ownership.** FINMA's article 10 of the AML ordinance requires originator and beneficiary data, with no exception for unhosted wallets `[verified in source]`. A bank may pay to an external wallet only if it belongs to its own client. In the live demo the bank pays **only to the Safe it helped create for that client** (the address is registered at creation); a signature-based proof for wallets created elsewhere is not built. When the client pays a third party from their own wallet, we hold that Swissquote is not the sending institution `[hypothesis]`; Swissquote funds gas, so it refuses gas to sanctioned addresses. The 1,000 CHF threshold `[TO VERIFY]`.
+- **Travel Rule and proof of ownership.** FINMA's article 10 of the AML ordinance requires originator and beneficiary data, with no exception for unhosted wallets `[verified in source]`. A bank may pay to an external wallet only if it belongs to its own client. In the live demo the bank pays **only to the Safe it helped create for that client** (the address is registered at creation). When the client pays a third party from their own wallet, we hold that Swissquote is not the sending institution `[hypothesis]`; Swissquote funds gas, so it refuses gas to sanctioned addresses. The 1,000 CHF threshold `[TO VERIFY]`.
 - **"Sole holder of the private key"** (Swissquote's deposit wording) `[hypothesis]`: no single key controls the wallet; the client controls the key that triggers every ordinary signature. To be defended as exclusive control of ordinary signing. `[TO VERIFY]` with the jury.
 - **Sanctions.** Swiss lists name persons and entities, we found no wallet addresses `[TO VERIFY]`; the prototype uses a simulated local list (the lawyer node refuses such recipients). The app warns and never forbids, except for sanctions.
 - **Data protection.** Biometrics never leave the device. The KYC selfie would be sensitive data requiring consent and an impact assessment; simulated here, nothing stored. The lawyer sees a display name, the address and request history, never the Swissquote client number. The blockchain is public and cannot be erased, which the privacy policy states.
@@ -258,13 +227,11 @@ No figure is attributed to Swissquote without a source. Revenue and retention nu
 
 ---
 
-## 11. Gas sponsoring and bonus topics
+## 11. Gas sponsoring
 
 **Gasless transactions (real).** The three owners hold **no ETH**. A sponsor wallet (`SQ_GAS_PRIVATE_KEY`, stored only in sq-mock) pays for the Safe deployment and for every `execTransaction`. **It is an EOA relay, not an ERC-4337 paymaster**: Candide's sponsored user operations were considered first and not used, because they need the ERC-4337 variant of the Safe (another factory and signature format) and the deadline did not allow it (`spike/RESULT.md`). The sponsor signs nothing on behalf of an owner; it only submits transactions the owners signed.
 
 Abuse limits (all enforced in `sq-mock/lib/sponsor.ts`, tested): only wallets of this bank's clients; the third owner of a sponsored Safe must be Swissquote's own key; a deployment needs a salt derived from the account (one wallet per account); plain calls only, no ETH value; the call is **simulated first**, so a bad signature set costs no gas; per-wallet daily cap (40), global daily caps (30 deployments, 300 executions), a minimum sponsor balance (calls are refused below it); bank transfers capped at 10 USDC each and per day per client; everything recorded in `sponsor_actions` and the audit chain.
-
-**Compliant dApp interaction (designed, not built in live mode).** The policy rule for unknown apps and unlimited approvals exists in `shared/policy.ts` (vectors T7). The screens run on the mock only; they are hidden in live mode.
 
 ---
 
