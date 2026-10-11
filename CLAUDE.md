@@ -23,6 +23,7 @@ Self-custody wallet prototype for the Swissquote track (BSA x EPFL hackathon). E
 ## Roles and branches (one branch each, never force-push)
 Téo: design and front, branch `teo/ui` (`components/ui/`, `app/console/`, screens C1-C21 and L1-L10 on mocks).
 Aaron: logic, MPC, nodes, policy engine, branch `main`. Théotime: `sq-mock/`, `exit/`, branch `theotime/sq`.
+For now, Aaron's and Théotime's work (logic, nodes, `sq-mock/`, `exit/`, `spike/`) lives on branch `aaron/logic`.
 Téo's front imports ONLY `lib/sqkeys.ts` (client) and `lawyer/lib/lawyerApi.ts` (lawyer). Signatures are a contract (CDC annex D): never change them alone.
 
 ## Design

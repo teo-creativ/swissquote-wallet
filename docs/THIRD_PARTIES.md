@@ -1,23 +1,55 @@
-# Third parties
+# Third-party services and libraries
 
 Services and libraries the prototype relies on (CDC 9.9 #8). Status is the state of this branch: "planned" means written down but not called by the code. Unknown countries are marked `[TO VERIFY]`; Aaron checks them against each provider's current terms. See also `NOTICE` for the DKLs23 library licence. The live demo is a Safe 2-of-3 smart account, not MPC.
 
-## Services
+Rules used in this file:
+- A value is given only when a file of the repository proves it. The source is named in the last column.
+- Everything else is marked **TO VERIFY**. No country or region is assumed.
+- Links to terms were not opened from this repository. They are given as a starting point and are all marked TO VERIFY.
+- A value that comes from a team note and not from a provider's own page keeps its TO VERIFY marker next to it.
 
-| Provider | Role | Data processed | Country | Terms | Status |
+## 1. Hosted services (they receive data)
+
+| Service | Purpose | Data processed | Country / region | Terms | Status and source |
 |---|---|---|---|---|---|
-| Vercel | Hosting of the client app, lawyer portal and Swissquote mock (functions region `fra1`) | IP addresses, requests, session cookies | Region Frankfurt (Germany); company and support access `[TO VERIFY]` | https://vercel.com/legal/terms | In use |
-| Supabase | Databases, one project per party (account, share ciphertext) | Account data, encrypted share material | Frankfurt (Germany) planned; company `[TO VERIFY]` | https://supabase.com/terms | Planned, not read or written by the code yet |
-| Public Base Sepolia RPC (`sepolia.base.org`) | Chain reads (balances, nonces) and broadcasts | Wallet addresses, IP address of the caller | `[TO VERIFY]` | https://docs.base.org | Planned for the live mode; used by `npm run check-chain` |
-| Base Sepolia explorer (`sepolia.basescan.org`) | Transaction links opened by the user | The user's browser contacts it when a link is opened | `[TO VERIFY]` | https://basescan.org/terms | Links only; in mock mode the hash is simulated |
+| Vercel (hosting, serverless functions) | Hosts the three web projects: `sq-keys` (client app), `sq-keys-lawyer` (lawyer portal and P2 node), `sq-keys-mock` (simulated Swissquote and P3 node). One Vercel account per team member. | Every HTTP request: IP address, user agent, session cookie, request bodies in transit (transfer requests, MPC protocol messages). Environment variables, including server secrets. Function logs. | Function region `fra1` for the client app and the lawyer portal (`vercel.json`, `lawyer/vercel.json`), described by the team as Frankfurt (Germany). Region of `sq-keys-mock`: TO VERIFY (no `vercel.json` in `sq-mock/`). Company location and support access: TO VERIFY | https://vercel.com/legal/terms and https://vercel.com/legal/privacy-policy (TO VERIFY) | In use for the client app and the lawyer portal (`README.md`). CDC 3.1, `docs/SETUP.md` section 6. `sq-keys-mock` deployed or not: TO VERIFY |
+| Supabase, project `sq-keys-app` (PostgreSQL) | Database of the client app. | Pseudonymous reference `sq_ref`, wallet address, public key, consents (document, version, date), devices (credential id, label), invitation token hashes, transfer requests (recipient, amount, status), recoveries (old and new address, dates), alerts. No client number, no identity document, no key share. | Frankfurt (Germany) planned (`README.md`); region actually chosen and company location: TO VERIFY | https://supabase.com/terms and https://supabase.com/privacy (TO VERIFY) | Planned, not read or written by the code yet. Schema: `sql/001_init.sql`. Project created or not: TO VERIFY |
+| Supabase, project `sq-keys-lawyer` (PostgreSQL) | Database of the lawyer portal and of the P2 node. | Lawyer name and firm, passkey public key and counter, client display name and wallet address, requests and decisions, policy versions, audit journal, MPC sessions, the **encrypted** P2 share (encryption key is not in the database). | Frankfurt (eu-central-1) planned (`docs/SETUP.md` section 5, `README.md`); region actually chosen and company location: TO VERIFY | Same as above (TO VERIFY) | Planned, not read or written by the code yet. Schema: `lawyer/sql/001_init.sql`. Project created or not: TO VERIFY |
+| Supabase, project `sq-keys-mock` (PostgreSQL) | Database of the simulated Swissquote service and of the P3 node. | Simulated client accounts (client id, name, password hash, KYC status, cash balance), the link between a client and a wallet address, ownership proofs, transfers, gas top-ups, simulated identity checks and calls, audit journal, the **encrypted** P3 share. All client data is demo data. | TO VERIFY | Same as above (TO VERIFY) | Planned, not read or written by the code yet. Schema: `sq-mock/sql/001_init.sql`. Project created or not: TO VERIFY |
+| Base Sepolia public RPC, `https://sepolia.base.org` | Reads balances and nonces, broadcasts signed transactions. Default value of `RPC_URL` in the three `.env.example` files. | Wallet addresses queried, signed transactions, IP address of the caller (the server functions, or the user's machine for the `exit/` script). Everything broadcast becomes public on the blockchain. | TO VERIFY (operator and location of the public endpoint) | https://docs.base.org (TO VERIFY: page with the terms of the public endpoint) | Planned for the live mode; used today by `npm run check-chain`. Default in `.env.example`, `lawyer/.env.example`, `sq-mock/.env.example`, `scripts/check-chain.ts` |
+| Alchemy or QuickNode (Base Sepolia RPC) | Replacement for the rate-limited public RPC during the demo. | Same as the public RPC, plus an account and an API key (a secret, kept in `RPC_URL`). | TO VERIFY | TO VERIFY | Planned only. `docs/SETUP.md` section 4. Provider chosen or not: TO VERIFY |
+| BaseScan, `https://sepolia.basescan.org` | Block explorer. The app only links to it ("View on the explorer"). | Nothing is sent by our servers. The user's browser opens the link: the explorer sees the IP address and the transaction hash viewed. | TO VERIFY | https://basescan.org/terms (TO VERIFY) | Links only; in mock mode the hash is simulated. `.env.example` (`NEXT_PUBLIC_EXPLORER_URL`), `lib/sqkeys.mock.ts` |
+| Test faucets (Circle USDC faucet, Coinbase Developer Platform or Alchemy ETH faucet) | Team only: funds the gas account and the demo wallet with test assets. Not used by end users. | The funded public address, and the faucet account of the team member. | TO VERIFY | TO VERIFY | `docs/SETUP.md` section 4 |
+| GitHub | Hosts the public repository (submission) and is the contact channel named in the legal pages. | Source code, commit authors, messages sent by people who contact the team. | TO VERIFY | https://docs.github.com/en/site-policy (TO VERIFY) | `docs/SETUP.md` section 1, CDC 1.1 |
 
 No analytics, advertising, tracking, e-mail or SMS provider is used. Fonts are bundled with the app (no request to a font service).
 
-## Libraries with a notable licence
+## 2. Libraries (run inside our own code, send no data to their author)
 
-| Library | Role | Data processed | Country of owner | Licence | Status |
+Versions are the exact versions pinned in `package.json` and `lawyer/package.json`. Licenses are the `license` field of each installed package. None of these libraries calls a server of its author at run time as far as the repository shows; this was not checked by a network capture: TO VERIFY.
+
+| Library | Version | Purpose | Data it handles | License | Terms / source |
 |---|---|---|---|---|---|
 | `@silencelaboratories/dkls-wasm-ll-web` and `-node` 1.2.0 | DKLs23 threshold signing (MPC), research only | None in the demo. In `research/mpc`: test key shares, in memory and in local git-ignored files | Singapore | Silence Laboratories Non-Commercial Use License Agreement (SLL), text in `licenses/SILENCE-LABORATORIES-LICENSE.md` | **Not used by the live demo.** Used only by `research/mpc/` (research scripts, outside the app build and Vercel) and by the lawyer health route `lawyer/app/api/node/health/route.ts` (checks that the WASM loads, signs nothing). The `-web` package is still in the root `package.json` for the load-only stub `lib/mpc/client.ts`, which no screen imports. Non-commercial only; commercial use needs a licence from the owner |
 | `@fontsource-variable/outfit`, `@fontsource/poppins` | Fonts | none | n/a | OFL-1.1 | In use |
 
-Other npm dependencies (MIT, ISC, Apache-2.0) are listed with exact versions in each `package.json`. They process no data outside our own servers.
+## 3. What no third party receives
+
+- Biometric data: it stays in the user's device (WebAuthn).
+- A complete private key: it never exists, at any party (CDC section 1).
+- The P1 share: it stays in the browser of the client, encrypted. No hosting or database provider stores it.
+- An unencrypted share in a database: P2 and P3 are stored encrypted, and the encryption keys are server variables, not database content.
+- The Swissquote client number and identity documents: they stay in the simulated Swissquote service; the client app and the lawyer portal only know `sq_ref` (CDC 9.6).
+
+## 4. Limit to state honestly
+
+P2 and P3 live in separate projects, separate databases and separate accounts, but with the same two providers (Vercel and Supabase). The hosting provider runs the functions that decrypt P2 and P3 and holds their encryption keys as environment variables. In the prototype, the independence of the two nodes is therefore organisational, not a separation of infrastructure providers. A real product would use a hardware security module for each party (CDC 3.3, 3.8).
+
+## 5. Open points
+
+1. **Regions.** `fra1` is set for two Vercel projects. Still to record: the region of `sq-keys-mock`, the Supabase region of each of the three projects (dashboard of each account owner), and the company location of each provider. Then replace the TO VERIFY values above. The privacy policy says some providers process data outside Switzerland: confirm it or correct it.
+2. **Outsourcing.** Vercel and Supabase would be outsourcing providers for a bank (FINMA circular 2018/3): status [TO VERIFY] in CDC 9.6. Not assessed for this prototype.
+3. **RPC provider.** Decide between the public RPC and Alchemy or QuickNode for the demo, then update this file.
+4. **Terms links.** Open and confirm each link marked TO VERIFY.
+5. **README.** The README links to this file for the table asked by CDC 9.9 point 8. `content/legal/privacy.md` section 7 points readers to the README, which is now consistent.
+6. **Commercial use.** The SLL license does not cover a commercial product. See `NOTICE` and CDC 9.7.
