@@ -1,0 +1,3 @@
+# Key shares and local wallet files of the research scripts. Never commit.
+.local/
+node_modules/

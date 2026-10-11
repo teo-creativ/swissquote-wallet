@@ -1,0 +1,36 @@
+{
+  "name": "sq-keys-research-mpc",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "s1": "tsx spike/s1.ts",
+    "s2": "tsx spike/s2.ts",
+    "s3": "tsx spike/s3.ts",
+    "s4": "tsx spike/s4.ts",
+    "s5": "tsx spike/s5.ts",
+    "harness": "tsx spike/http-harness/run.ts",
+    "btc:keygen": "tsx bitcoin/keygen.ts",
+    "btc:address": "tsx bitcoin/address.ts",
+    "btc:dryrun": "tsx bitcoin/dryrun.ts",
+    "btc:send": "tsx bitcoin/send.ts"
+  },
+  "dependencies": {
+    "@noble/curves": "2.4.0",
+    "@scure/btc-signer": "2.4.1",
+    "@silencelaboratories/dkls-wasm-ll-node": "1.2.0",
+    "viem": "2.57.4"
+  },
+  "devDependencies": {
+    "@silencelaboratories/dkls-wasm-ll-web": "1.2.0",
+    "@types/node": "22.20.5",
+    "tsx": "4.23.15",
+    "typescript": "7.0.2",
+    "vitest": "5.0.3"
+  }
+}
