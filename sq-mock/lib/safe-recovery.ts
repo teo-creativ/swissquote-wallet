@@ -19,25 +19,47 @@ function recoveryIdOf(input: Input): string {
   return id.toLowerCase();
 }
 
-/** POST /api/recovery/open {sqRef, recoveryId, safeAddress, newOwnerAddress}: starts the identity check of a Safe recovery. */
+/**
+ * POST /api/recovery/open {sqRef, recoveryId, safeAddress, newOwnerAddress?}: starts the identity check of a Safe recovery.
+ * The new key is created on the new phone after the identity check, so it may be attached later (recovery/attach).
+ */
 export async function recoveryOpen(deps: Deps, input: Input) {
   const { store, chain, now } = deps;
   const client = await clientBySqRef(store, input);
   const recoveryId = recoveryIdOf(input);
   const safe = getAddress(address(input, "safeAddress"));
-  const newOwner = getAddress(address(input, "newOwnerAddress"));
+  const newOwner = input.newOwnerAddress === undefined ? null : getAddress(address(input, "newOwnerAddress"));
   const account = await store.getSafeAccount(client.sqRef);
   if (!account || account.safeAddress !== safe.toLowerCase()) throw new ApiError(404, "UNKNOWN_SAFE", "This wallet does not belong to this client.");
   const state = await chain.getSafeState(safe);
-  if (state.owners.some((o) => o.toLowerCase() === newOwner.toLowerCase())) throw new ApiError(409, "ALREADY_OWNER", "This key already controls the wallet.");
+  if (newOwner && state.owners.some((o) => o.toLowerCase() === newOwner.toLowerCase())) throw new ApiError(409, "ALREADY_OWNER", "This key already controls the wallet.");
 
   const created = await store.createIdentityCheck({
     recoveryId, clientId: client.clientId, outcome: null, identityVerifiedAt: null, releaseAfter: null, cancelledAt: null, usedAt: null,
-    oldAddress: safe.toLowerCase(), createdAt: now.toISOString(), safeAddress: safe.toLowerCase(), newOwnerAddress: newOwner.toLowerCase(),
+    oldAddress: safe.toLowerCase(), createdAt: now.toISOString(), safeAddress: safe.toLowerCase(), newOwnerAddress: newOwner?.toLowerCase() ?? null,
   });
   if (!created) throw new ApiError(409, "RECOVERY_EXISTS", "This recovery already exists.");
-  await appendAudit(store, "RECOVERY_OPENED", { recoveryId, clientId: client.clientId, safe: safe.toLowerCase(), newOwner: newOwner.toLowerCase() }, now);
+  await appendAudit(store, "RECOVERY_OPENED", { recoveryId, clientId: client.clientId, safe: safe.toLowerCase(), newOwner: newOwner?.toLowerCase() ?? null }, now);
   return { status: "pending", simulated: true };
+}
+
+/** POST /api/recovery/attach {recoveryId, newOwnerAddress}: the new phone's key, once. Refused after the key was set or the recovery closed. */
+export async function recoveryAttach(deps: Deps, input: Input) {
+  const { store, chain, now } = deps;
+  const recoveryId = recoveryIdOf(input);
+  const newOwner = getAddress(address(input, "newOwnerAddress"));
+  const check = await store.getIdentityCheck(recoveryId);
+  if (!check || !check.safeAddress) throw new ApiError(404, "UNKNOWN_RECOVERY", "Unknown recovery.");
+  if (check.cancelledAt || check.usedAt) throw new ApiError(409, "RECOVERY_CLOSED", "This recovery is closed.");
+  if (check.newOwnerAddress) {
+    if (check.newOwnerAddress === newOwner.toLowerCase()) return { attached: true };
+    throw new ApiError(409, "NEW_OWNER_SET", "The new key of this recovery is already set.");
+  }
+  const state = await chain.getSafeState(getAddress(check.safeAddress));
+  if (state.owners.some((o) => o.toLowerCase() === newOwner.toLowerCase())) throw new ApiError(409, "ALREADY_OWNER", "This key already controls the wallet.");
+  await store.updateIdentityCheck(recoveryId, { newOwnerAddress: newOwner.toLowerCase() });
+  await appendAudit(store, "RECOVERY_KEY_ATTACHED", { recoveryId, clientId: check.clientId, newOwner: newOwner.toLowerCase() }, now);
+  return { attached: true };
 }
 
 /** The client key is the one owner that is neither P2 nor P3. Read from the chain, so a second recovery works too. */

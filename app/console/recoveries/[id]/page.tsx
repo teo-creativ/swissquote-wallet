@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { getRecovery, listClients } from "@/lib/console.mock";
+import { getRecovery, listClients } from "@/lib/console.data";
 import { RecoveryDetail } from "./RecoveryDetail";
 
 export default async function RecoveryPage({ params }: { params: Promise<{ id: string }> }) {

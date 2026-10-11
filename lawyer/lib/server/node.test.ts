@@ -9,7 +9,7 @@ import type { Ctx } from "./ctx";
 import { ApiError } from "./errors";
 import { hmacRoute } from "./http";
 import { inviteInspect, inviteRegister, inviteStatus, loginFinish, loginStart, registerOptions, registerVerify } from "./invites";
-import { nodeOwnerCreate, exitRequest, exitStatus, recoveryRequest, recoveryStatus, transferRequest, transferStatus } from "./nodes";
+import { nodeOwnerCreate, policyView, transferCheck, exitRequest, exitStatus, recoveryRequest, recoveryStatus, transferRequest, transferStatus } from "./nodes";
 import { auditVerify, clientViews, decideOptions, decideVerify, journal, me, policyGet, policyOptions, policyVerify, requestDetail, requestSummaries } from "./portal";
 import { sessionLawyerId } from "./session";
 import { SoftAuthenticator, testCtx, T0 } from "./testkit";
@@ -281,6 +281,25 @@ describe("transfers: policy vectors T1 to T13 on the server", () => {
     expect(await transferRequest(w.ctx, w.req(key().address, 1_000_000n))).toMatchObject({ status: "signed", outcome: "AUTO" });
     const bad = "0x3333333333333333333333333333333333330000" as Address;
     expect(await transferRequest(w.ctx, w.req(bad, 1_000_000n, 0n))).toMatchObject({ status: "refused" });
+  });
+});
+
+describe("read only helpers for the client app", () => {
+  it("transfer/check says what the policy would decide and reserves nothing", async () => {
+    const w = await world();
+    const to = key().address;
+    expect(await transferCheck(w.ctx, { sqRef: w.sqRef, to, amount: "1000000" })).toEqual({ outcome: "LAWYER", reasons: ["NEW_RECIPIENT"] });
+    await w.approve(to);
+    expect(await transferCheck(w.ctx, { sqRef: w.sqRef, to, amount: "1000000" })).toEqual({ outcome: "AUTO", reasons: ["WITHIN_POLICY"] });
+    expect(await transferCheck(w.ctx, { sqRef: w.sqRef, to, amount: "0" })).toEqual({ outcome: "REFUSED", reasons: ["INVALID_AMOUNT"] });
+    expect(await w.ctx.db.select("decisions")).toHaveLength(0);
+    expect(await w.ctx.db.select("approval_requests")).toHaveLength(0);
+  });
+  it("policy returns the limits and the known recipients", async () => {
+    const w = await world();
+    const to = key().address;
+    await w.approve(to);
+    expect(await policyView(w.ctx, { sqRef: w.sqRef })).toEqual({ perTxCap: "5.00", dailyCap: "10.00", hourlyCount: 3, dailyCount: 6, newRecipientRequiresLawyer: true, approvedRecipients: [getAddress(to)] });
   });
 });
 

@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { AppWindow, Download, FileText, KeyRound, LogOut, Smartphone } from "lucide-react";
 import { createExitKit, getAccount, getAlerts, logout, revokeDevice } from "@/lib/sqkeys";
 import type { Account, Alert, Device } from "@/lib/sqkeys";
+import { isMockMode } from "@/lib/sqkeys.mode";
 import { Banner, BottomSheet, Button, Input, PageShell, RowCard, StatusChip } from "@/components/ui";
 import { AppTabBar } from "../_lib/AppTabBar";
 import { Guard } from "../_lib/Guard";
@@ -126,7 +127,7 @@ function Security({ initial }: { initial: Account }) {
             leading={<Smartphone size={20} strokeWidth={1.75} />}
             title={d.label}
             subtitle={`Added ${when(d.createdAt)}`}
-            trailing={d.current ? (reduced ? <StatusChip status="warning">Reduced protection</StatusChip> : <StatusChip status="verified">This phone</StatusChip>) : <Button variant="secondary" fullWidth={false} className="min-h-11 px-4 text-base" onClick={() => setRevoking(d)}>Remove</Button>}
+            trailing={d.current ? (reduced ? <StatusChip status="warning">Reduced protection</StatusChip> : <StatusChip status="verified">This phone</StatusChip>) : isMockMode ? <Button variant="secondary" fullWidth={false} className="min-h-11 px-4 text-base" onClick={() => setRevoking(d)}>Remove</Button> : <StatusChip status="neutral">Other phone</StatusChip>}
           />
         ))}
       </Section>
@@ -180,9 +181,11 @@ function Security({ initial }: { initial: Account }) {
         ))}
       </Section>
 
-      <Section title="Apps">
-        <RowCard leading={<AppWindow size={20} strokeWidth={1.75} />} title="Allow an app (demo)" subtitle="Let a demo app spend USDC from your wallet" href="/apps/allow" />
-      </Section>
+      {isMockMode && (
+        <Section title="Apps">
+          <RowCard leading={<AppWindow size={20} strokeWidth={1.75} />} title="Allow an app (demo)" subtitle="Let a demo app spend USDC from your wallet" href="/apps/allow" />
+        </Section>
+      )}
 
       <Section title="Legal">
         {LEGAL.map((l) => {

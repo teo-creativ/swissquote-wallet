@@ -1,4 +1,4 @@
-import { listClients, listRecoveries } from "@/lib/console.mock";
+import { listClients, listRecoveries } from "@/lib/console.data";
 import { PageTitle } from "../PageTitle";
 import { RecoveriesTable } from "./RecoveriesTable";
 

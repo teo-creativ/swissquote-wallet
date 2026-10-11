@@ -10,7 +10,7 @@ import type { Ctx } from "./ctx";
 import type { Row } from "./db";
 import { ApiError } from "./errors";
 import { ownerAddress, ownerCreate, signHashAsOwner } from "./keys";
-import { addressOf, baseUnits, big, intentHashOf, invalid, sha256Hex, text, uuid, withLock, type Input } from "./util";
+import { addressOf, baseUnits, big, formatUsdc, intentHashOf, invalid, sha256Hex, text, uuid, withLock, type Input } from "./util";
 
 const DAY_MS = 86_400_000;
 const iso = (ms: number) => new Date(ms).toISOString();
@@ -83,6 +83,43 @@ type TransferResult =
   | { status: "pending"; outcome: "LAWYER"; reasons: string[]; requestId: string; expiresAt: string }
   | { status: "refused"; outcome: "REFUSED"; reasons: string[] };
 
+/** The policy decision for a transfer, from the client's own policy and history. Reserves nothing. */
+async function decideTransfer(ctx: Ctx, client: Row, to: Address, amount: bigint) {
+  const policy = await policyRow(ctx, client.id);
+  const now = ctx.now.getTime();
+  const autos = (await ctx.db.select("decisions", { client_id: client.id, outcome: "AUTO", created_at: { gte: iso(now - DAY_MS) } }))
+    .filter((d) => d.status !== "CANCELLED")
+    .map((d) => ({ at: Date.parse(d.created_at), amountBase: big(d.amount_base) }));
+  const pending = (await ctx.db.select("approval_requests", { client_id: client.id, status: "pending" })).length;
+  const sanctioned = (await ctx.db.select("sanctioned_addresses")).map((r) => String(r.address).toLowerCase());
+  const decision = evaluatePolicy(
+    { kind: "usdc_transfer", to, amountBase: amount },
+    { approvedRecipients: await approvedRecipients(ctx, client.id), autoDecisions: autos, pendingCount: pending, sanctioned },
+    policyConfigOf(policy), now,
+  );
+  return { decision, policy };
+}
+
+/** POST /api/node/transfer/check {sqRef, to, amount}: what the policy would say now. Nothing is reserved, nothing is signed. */
+export async function transferCheck(ctx: Ctx, input: Input) {
+  const client = await acceptedClient(ctx, input);
+  const to = addressOf(input, "to");
+  const amount = baseUnits(input, "amount");
+  if (amount <= 0n) return { outcome: "REFUSED" as const, reasons: ["INVALID_AMOUNT"] };
+  const { decision } = await decideTransfer(ctx, client, to, amount);
+  return { outcome: decision.outcome, reasons: decision.reasons };
+}
+
+/** GET /api/node/policy?sqRef: the client's limits and known recipients (read only). */
+export async function policyView(ctx: Ctx, input: Input) {
+  const client = await acceptedClient(ctx, input);
+  const p = await policyRow(ctx, client.id);
+  return {
+    perTxCap: formatUsdc(big(p.per_tx_cap_base)), dailyCap: formatUsdc(big(p.daily_cap_base)), hourlyCount: Number(p.hourly_count), dailyCount: Number(p.daily_count),
+    newRecipientRequiresLawyer: Boolean(p.new_recipient_requires_lawyer), approvedRecipients: (await approvedRecipients(ctx, client.id)).map((a) => getAddress(a)),
+  };
+}
+
 /** POST /api/node/transfer/request {sqRef, safeAddress, to, amount, nonce, safeTxHash}. */
 export async function transferRequest(ctx: Ctx, input: Input): Promise<TransferResult> {
   const client = await acceptedClient(ctx, input);
@@ -108,18 +145,8 @@ export async function transferRequest(ctx: Ctx, input: Input): Promise<TransferR
     const hash = safeTxHash({ safe, tx: usdcTransferTx(ctx.config.usdc, to, amount), nonce: state.nonce });
     if (hash.toLowerCase() !== claimed) throw new ApiError(409, "HASH_MISMATCH", "The transaction does not match the request.");
 
-    const policy = await policyRow(ctx, client.id);
     const now = ctx.now.getTime();
-    const autos = (await ctx.db.select("decisions", { client_id: client.id, outcome: "AUTO", created_at: { gte: iso(now - DAY_MS) } }))
-      .filter((d) => d.status !== "CANCELLED")
-      .map((d) => ({ at: Date.parse(d.created_at), amountBase: big(d.amount_base) }));
-    const pending = (await ctx.db.select("approval_requests", { client_id: client.id, status: "pending" })).length;
-    const sanctioned = (await ctx.db.select("sanctioned_addresses")).map((r) => String(r.address).toLowerCase());
-    const decision = evaluatePolicy(
-      { kind: "usdc_transfer", to, amountBase: amount },
-      { approvedRecipients: await approvedRecipients(ctx, client.id), autoDecisions: autos, pendingCount: pending, sanctioned },
-      policyConfigOf(policy), now,
-    );
+    const { decision, policy } = await decideTransfer(ctx, client, to, amount);
     const intent = { v: 1, kind: "transfer", clientId: client.id, safe: safe.toLowerCase(), to: to.toLowerCase(), amountBase: amount.toString(), nonce: nonce.toString(), safeTxHash: hash, chainId: ctx.config.chainId };
     const intentHash = intentHashOf(intent);
     const base = { client_id: client.id, request_ref: hash, intent_hash: intentHash, amount_base: amount.toString(), policy_version: policy.version, reasons: decision.reasons, safe_tx_hash: hash, created_at: ctx.now.toISOString() };

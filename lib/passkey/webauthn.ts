@@ -37,7 +37,9 @@ const b64u = {
     return out;
   },
 };
-const randomBytes = (n: number): Uint8Array<ArrayBuffer> => crypto.getRandomValues(new Uint8Array(new ArrayBuffer(n)));
+export const b64uEncode = (b: Uint8Array): string => b64u.enc(b);
+export const b64uDecode = (s: string): Uint8Array<ArrayBuffer> => b64u.dec(s);
+export const randomBytes = (n: number): Uint8Array<ArrayBuffer> => crypto.getRandomValues(new Uint8Array(new ArrayBuffer(n)));
 
 // ---------------------------------------------------------------- registered credentials (ids only, not secrets)
 const STORE = "sqkeys.passkey.credentials";
@@ -175,6 +177,8 @@ export function createPasskey(prepared: PreparedChallenge, userName: string, opt
 
 export interface GetResult {
   prfOutput: Uint8Array | null;
+  /** The credential the user picked. With several passkeys on a phone this tells which one produced the PRF output. */
+  credentialId: Uint8Array;
 }
 
 /** Call directly from a tap handler. withPrf false = plain user-verification assertion (reduced-protection fallback). */
@@ -192,7 +196,7 @@ export function getPasskey(credentialId: Uint8Array<ArrayBuffer> | null, challen
     (cred) => {
       if (!cred) return fail({ name: "NotAllowedError", message: "No credential returned" });
       const first = ((cred as PublicKeyCredential).getClientExtensionResults() as PrfResults).prf?.results?.first;
-      return { prfOutput: first ? new Uint8Array(first) : null };
+      return { prfOutput: first ? new Uint8Array(first) : null, credentialId: new Uint8Array((cred as PublicKeyCredential).rawId) };
     },
     (e: unknown) => fail(e),
   );
@@ -234,25 +238,27 @@ function openDb(): Promise<IDBDatabase> {
   });
 }
 
-export async function storeFallbackKey(): Promise<void> {
+/** Creates the fallback key, keeps it in IndexedDB and also returns it (non-extractable) so the caller can wrap P1 right away. */
+export async function storeFallbackKey(slot = "p1-wrap"): Promise<CryptoKey> {
   const key = await crypto.subtle.generateKey({ name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"]);
   const db = await openDb();
   await new Promise<void>((resolve, reject) => {
     const tx = db.transaction(OBJ, "readwrite");
-    tx.objectStore(OBJ).put(key, "p1-wrap");
+    tx.objectStore(OBJ).put(key, slot);
     tx.oncomplete = () => resolve();
     tx.onerror = () => reject(tx.error);
   });
   db.close();
   setProtectionLevel("reduced");
+  return key;
 }
 
 /** Hands out the fallback key only after a fresh user-verification assertion. Call from a tap. */
-export function unlockFallbackKey(credentialId: Uint8Array<ArrayBuffer> | null): Promise<CryptoKey> {
+export function unlockFallbackKey(credentialId: Uint8Array<ArrayBuffer> | null, slot = "p1-wrap"): Promise<CryptoKey> {
   return getPasskey(credentialId, randomBytes(32), false).then(async () => {
     const db = await openDb();
     const key = await new Promise<CryptoKey | undefined>((resolve, reject) => {
-      const req = db.transaction(OBJ, "readonly").objectStore(OBJ).get("p1-wrap");
+      const req = db.transaction(OBJ, "readonly").objectStore(OBJ).get(slot);
       req.onsuccess = () => resolve(req.result as CryptoKey | undefined);
       req.onerror = () => reject(req.error);
     });

@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { ChevronRight, ExternalLink, Timer } from "lucide-react";
 import { cancelRecovery, executeRecovery, getRecovery } from "@/lib/sqkeys";
 import type { RecoveryView } from "@/lib/sqkeys";
+import { isMockMode } from "@/lib/sqkeys.mode";
 import { Banner, Button, CheckHalo, PageShell, StepList } from "@/components/ui";
 import type { Step } from "@/components/ui/StepList";
 import { useNow } from "@/components/ui/useNow";
@@ -31,7 +32,7 @@ function timeline(view: RecoveryView, now: number): Step[] {
       status: view.lawyerStatus === "approved" ? "done" : view.lawyerStatus === "refused" ? "error" : view.identityVerified ? "active" : "todo",
     },
     { label: "Waiting period", status: !view.identityVerified ? "todo" : released ? "done" : "active" },
-    { label: "Moving your funds", status: completed ? "done" : ready ? "active" : "todo" },
+    { label: isMockMode ? "Moving your funds" : "Replacing your key", status: completed ? "done" : ready ? "active" : "todo" },
     { label: "Done", status: completed ? "done" : "todo" },
   ];
 }
@@ -102,7 +103,7 @@ function Track({ id }: { id: string }) {
       <PageShell footer={home}>
         <div className="flex min-h-[55dvh] flex-col items-center justify-center gap-6 text-center">
           <CheckHalo size={64} />
-          <h1 role="status" className="text-[28px] font-semibold leading-8 text-ink">Funds moved to your new wallet</h1>
+          <h1 role="status" className="text-[28px] font-semibold leading-8 text-ink">{isMockMode ? "Funds moved to your new wallet" : "Your new key now controls your wallet"}</h1>
           {view.newAddress && <p className="font-mono text-sm text-muted" title={view.newAddress}>{shortAddress(view.newAddress)}</p>}
           {explorerUrl && (
             <a href={explorerUrl} target="_blank" rel="noopener noreferrer" className="flex min-h-11 items-center gap-2 rounded-pill bg-surface px-6 text-base font-semibold text-ink">
@@ -141,7 +142,7 @@ function Track({ id }: { id: string }) {
         </div>
       }
     >
-      <Banner variant="demo" className="mb-4">Demo mode: recovery delay is 2 minutes. In production it would be 24 hours.</Banner>
+      <Banner variant="demo" className="mb-4">{isMockMode ? "Demo mode: recovery delay is 2 minutes. In production it would be 24 hours." : "Demo mode: the waiting period is short for the demo. In production it would be 24 hours."}</Banner>
 
       {failedIdentity ? (
         <Banner variant="warning">We could not verify your identity. Your lawyer was alerted.</Banner>
@@ -155,10 +156,16 @@ function Track({ id }: { id: string }) {
                 {releaseMs > 0 ? `Waiting period: ${mmss(releaseMs)} left` : "The waiting period is over."}
               </p>
             )}
-            {refused && <p>Your lawyer declined the recovery. Nothing was moved.</p>}
-            {!refused && view.identityVerified && view.lawyerStatus === "pending" && <p>Your lawyer must approve before your funds move.</p>}
-            <p>Old wallet: <span className="font-mono" title={view.oldAddress}>{shortAddress(view.oldAddress)}</span></p>
-            {view.newAddress && <p>New wallet: <span className="font-mono" title={view.newAddress}>{shortAddress(view.newAddress)}</span></p>}
+            {refused && <p>Your lawyer declined the recovery. Nothing was changed and your old phone keeps control.</p>}
+            {!refused && view.identityVerified && view.lawyerStatus === "pending" && <p>{isMockMode ? "Your lawyer must approve before your funds move." : "Your lawyer must approve before your key is replaced."}</p>}
+            {isMockMode ? (
+              <>
+                <p>Old wallet: <span className="font-mono" title={view.oldAddress}>{shortAddress(view.oldAddress)}</span></p>
+                {view.newAddress && <p>New wallet: <span className="font-mono" title={view.newAddress}>{shortAddress(view.newAddress)}</span></p>}
+              </>
+            ) : (
+              <p>Your wallet (unchanged): <span className="font-mono" title={view.oldAddress}>{shortAddress(view.oldAddress)}</span></p>
+            )}
           </div>
         </>
       )}

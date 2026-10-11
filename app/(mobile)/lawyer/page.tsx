@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronRight, Copy, KeyRound, Share2 } from "lucide-react";
 import { getLawyerStatus, inviteLawyer } from "@/lib/sqkeys";
+import { isMockMode } from "@/lib/sqkeys.mode";
 import { Banner, BottomSheet, Button, IconButton, Input, KeyShowcase, PageShell, RowCard, SimulatedPill, StatusChip } from "@/components/ui";
 import { Guard } from "../_lib/Guard";
 import { isNotAuthenticated, messageOf } from "../_lib/errors";
@@ -138,15 +139,17 @@ function Lawyer({ initial }: { initial: LawyerState["status"] }) {
               trailing={accepted ? <StatusChip status="verified" /> : <StatusChip status="pending" />}
             />
           </div>
-          <div>
-            <SimulatedPill>Simulated lawyer (played by a team member)</SimulatedPill>
-          </div>
+          {isMockMode && (
+            <div>
+              <SimulatedPill>Simulated lawyer (played by a team member)</SimulatedPill>
+            </div>
+          )}
           {expired && <Banner variant="warning">This link expired. Create a new one.</Banner>}
           {!accepted && (
             <>
               <Button variant="secondary" disabled={expired} onClick={() => setSheetOpen(true)}>Show the link</Button>
               <Button variant="ghost" loading={loading} onClick={createLink}>Create a new link</Button>
-              <SimulateLawyerButton onDone={refresh} />
+              {isMockMode && <SimulateLawyerButton onDone={refresh} />}
             </>
           )}
         </div>

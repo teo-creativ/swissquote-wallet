@@ -21,6 +21,18 @@ export type Recovery = {
   cosignedAt: number | null;
   /** Hash of the linked cryptographic proof (recovery request). */
   proofHash: string;
+  /**
+   * Live mode: the real state read from sq-mock. When present, deriveRecovery uses it instead of the simulated timings.
+   * Swissquote knows the lawyer approved only when its own node signed (it checks the lawyer's signature first).
+   */
+  real?: {
+    identity: IdentityState;
+    identityVerifiedAt: number | null;
+    identityFailedAt: number | null;
+    lawyer: LawyerState;
+    lawyerApprovedAt: number | null;
+    releaseAfter: number | null;
+  };
 };
 
 /** A recovery with its derived state at a given instant. Pure function of (Recovery, now): see lib/console.logic.ts. */

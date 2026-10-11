@@ -7,7 +7,7 @@ import type { Address } from "viem";
 import { SAFE_THRESHOLD } from "@/src/shared/safe";
 import type { NodeChain, SafeState } from "./chain";
 import { readConfig, type Ctx } from "./ctx";
-import { MemoryDb } from "./db";
+import { newMemoryDb } from "./db";
 
 export const T0 = new Date("2026-10-11T12:00:00.000Z");
 export const ORIGIN = "https://lawyer.test";
@@ -31,7 +31,7 @@ export function testCtx(now: Date = T0) {
     REQUEST_TTL_SECONDS: "180", LAWYER_DECISION_TTL_SECONDS: "600", AUTO_DECISION_TTL_SECONDS: "120", EXIT_DELAY_SECONDS: "120",
   };
   const chain = new FakeNodeChain();
-  const ctx: Ctx = { db: new MemoryDb(), chain, config: readConfig(env), env, now, sleep: async () => {} };
+  const ctx: Ctx = { db: newMemoryDb(), chain, config: readConfig(env), env, now, sleep: async () => {} };
   return { ctx, chain, at: (ms: number): Ctx => ({ ...ctx, now: new Date(now.getTime() + ms) }) };
 }
 

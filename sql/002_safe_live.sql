@@ -11,6 +11,7 @@ alter table accounts add column if not exists deployed_at timestamptz;
 alter table accounts add column if not exists lawyer_status text not null default 'none'
   check (lawyer_status in ('none','invited','accepted'));
 alter table accounts add column if not exists lawyer_name text;
+alter table accounts add column if not exists display_name text;
 alter table accounts add column if not exists lawyer_accepted_at timestamptz;
 
 -- The device that holds P1 (an owner address per passkey, so that recovery can swap it).
@@ -21,6 +22,9 @@ alter table tx_requests add column if not exists safe_tx_hash text;
 alter table tx_requests add column if not exists safe_nonce numeric(78,0);
 alter table tx_requests add column if not exists p1_signature text;
 alter table tx_requests add column if not exists lawyer_request_id text;
+alter table tx_requests add column if not exists p1_signer text;
+-- 'out' = sent from the wallet, 'in' = deposit from the Swissquote account.
+alter table tx_requests add column if not exists direction text not null default 'out' check (direction in ('out','in'));
 
 -- Recovery by swapOwner (same Safe address).
 alter table recoveries add column if not exists new_owner_address text;

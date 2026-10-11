@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronRight, ExternalLink, ShieldCheck } from "lucide-react";
 import { getSwissquoteAccount, toBase, transferFromSwissquote } from "@/lib/sqkeys";
+import { isMockMode } from "@/lib/sqkeys.mode";
 import { Banner, Button, CheckHalo, Input, PageShell, SimulatedPill } from "@/components/ui";
 import { Guard } from "../_lib/Guard";
 import { isNotAuthenticated, messageOf } from "../_lib/errors";
@@ -110,7 +111,7 @@ function FromSwissquote() {
 
         <p className="flex items-start gap-3 rounded-card bg-ok-bg p-4 text-sm leading-5 text-ok">
           <ShieldCheck size={20} strokeWidth={1.75} className="mt-0.5 shrink-0" aria-hidden="true" />
-          Your wallet is verified as yours: you signed a proof of ownership.
+          {isMockMode ? "Your wallet is verified as yours: you signed a proof of ownership." : "Swissquote sends test USDC to your own wallet address. The transfer is real, on Base Sepolia."}
         </p>
 
         {error && <Banner variant="warning">{error}</Banner>}

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Fingerprint, KeyRound } from "lucide-react";
 import { createDevicePasskey, SqKeysError } from "@/lib/sqkeys";
+import { sealAfterPrf } from "@/lib/live/ceremony";
 import { isMockMode } from "@/lib/sqkeys.mode";
 import { detectInAppBrowser, interpretCapabilities, mapWebAuthnError } from "@/lib/passkey/helpers";
 import type { PasskeyErrorInfo } from "@/lib/passkey/helpers";
@@ -22,8 +23,8 @@ type Phase = "ready" | "confirm" | "done";
 
 // C4. Texts: annex F.2. Comes AFTER the lawyer invitation (team decision, see docs/CONTRACT_CHANGE.md).
 //
-// Mock mode runs the real WebAuthn ceremony on the phone (so Face ID / fingerprint is truly tested), then calls the
-// mock contract. Live mode: createDevicePasskey is the contract's job (Aaron), so we only call it.
+// The WebAuthn ceremony is real in both modes (Face ID / fingerprint is truly used). Mock mode then calls the mock contract. Live mode
+// generates P1 in this browser, wraps it with the passkey (lib/live), and createDevicePasskey registers its public address.
 // Every create()/get() below is called synchronously from a tap handler, with options prepared on mount.
 function Key() {
   const router = useRouter();
@@ -68,6 +69,12 @@ function Key() {
   }
 
   async function afterPrf(output: Uint8Array<ArrayBuffer> | null) {
+    if (!isMockMode) {
+      // Live: P1 is generated in this browser and wrapped with the passkey. Only its public address leaves the phone.
+      if (!credentialId.current) throw new PasskeyError(mapWebAuthnError({ name: "PASSKEY_PRF_MISSING" }));
+      const sealed = await sealAfterPrf({ slot: "current", credentialId: credentialId.current, prfOutput: output, allowNoPrf: allowNoPrf.current });
+      return finish(sealed.level);
+    }
     if (output) {
       await deriveWrappingKey(output); // proves the HKDF + AES-GCM step works on this phone; the key itself is not kept here
       return finish("prf");
@@ -88,11 +95,6 @@ function Key() {
   function create() {
     setError(null);
     setPasskeyError(null);
-    if (!isMockMode) {
-      setLoading(true);
-      void finish(null); // live: the contract owns the ceremony
-      return;
-    }
     const challenge = freshChallenge();
     setLoading(true);
     createPasskey(challenge, "SQ Keys client").then(async (r) => {
@@ -113,7 +115,10 @@ function Key() {
     setPasskeyError(null);
     setLoading(true);
     getPasskey(credentialId.current, freshChallenge().challenge, true)
-      .then((r) => afterPrf(r.prfOutput as Uint8Array<ArrayBuffer> | null), showFailure)
+      .then((r) => {
+        credentialId.current = new Uint8Array(r.credentialId) as Uint8Array<ArrayBuffer>; // the passkey the user picked (existing or new)
+        return afterPrf(r.prfOutput as Uint8Array<ArrayBuffer> | null);
+      }, showFailure)
       .catch(showFailure);
   }
 

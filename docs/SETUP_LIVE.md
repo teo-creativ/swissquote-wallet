@@ -62,3 +62,7 @@ Exit code 1 if anything fails, so it can gate a deploy.
 
 ## 5. Faucets
 ETH on Base Sepolia: Coinbase Developer Platform, Alchemy or Superchain faucet. USDC: https://faucet.circle.com (choose Base Sepolia). Check with `npm run check-chain -- <address>`.
+
+## 6. Client app: what the live build needs
+Set before the build (they are inlined): `NEXT_PUBLIC_SQKEYS_MODE=live`, `NEXT_PUBLIC_LAWYER_URL`. Server side: `SQ_URL`, `LAWYER_URL`, both pair secrets, `SESSION_SECRET` (at least 32 characters), the Supabase pair, `RPC_URL`, `CONSOLE_PASSWORD` (the console sends it to sq-mock). `ALLOW_NO_PRF=true` only if you accept phones without PRF support (shown as "Reduced protection").
+The client app never holds a key of P2 or P3 and never calls the sponsor directly: gas is requested through sq-mock.

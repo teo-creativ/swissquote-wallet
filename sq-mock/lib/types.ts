@@ -52,7 +52,7 @@ export type IdentityCheck = {
   p3SignedAt?: string | null;
   executedTxHash?: string | null;
 };
-export type IdentityCheckPatch = Partial<Pick<IdentityCheck, "outcome" | "identityVerifiedAt" | "releaseAfter" | "cancelledAt" | "usedAt" | "safeTxHash" | "p3SignedAt" | "executedTxHash">>;
+export type IdentityCheckPatch = Partial<Pick<IdentityCheck, "outcome" | "identityVerifiedAt" | "releaseAfter" | "cancelledAt" | "usedAt" | "newOwnerAddress" | "safeTxHash" | "p3SignedAt" | "executedTxHash">>;
 
 export type AuditEntry = { id: number; ts: string; action: string; payload: Record<string, unknown>; prevHash: string; entryHash: string };
 

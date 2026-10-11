@@ -1,7 +1,7 @@
 import { DataTable, StatusChip } from "@/components/ui";
 import type { Column } from "@/components/ui";
 import { formatDateTime } from "@/lib/console.logic";
-import { listCalls } from "@/lib/console.mock";
+import { listCalls } from "@/lib/console.data";
 import type { SimulatedCall } from "@/lib/console.types";
 import { PageTitle } from "../PageTitle";
 

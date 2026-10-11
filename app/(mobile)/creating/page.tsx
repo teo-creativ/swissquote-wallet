@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronRight, ExternalLink, Lock, Smartphone, User } from "lucide-react";
-import { createWallet } from "@/lib/sqkeys";
+import { createWallet, getActivity } from "@/lib/sqkeys";
 import type { WalletStep } from "@/lib/sqkeys";
 import { isMockMode } from "@/lib/sqkeys.mode";
 import { shareStates } from "@/lib/onboarding";
@@ -40,6 +40,7 @@ function Creating() {
   const router = useRouter();
   const [current, setCurrent] = useState<WalletStep | null>(null);
   const [address, setAddress] = useState<string | null>(null);
+  const [deployUrl, setDeployUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const started = useRef(false);
 
@@ -49,6 +50,10 @@ function Creating() {
     try {
       const { address } = await createWallet(setCurrent);
       setAddress(address);
+      if (!isMockMode) {
+        // The real deployment transaction, paid by the sponsor. Failing to find it never blocks the screen.
+        void getActivity().then((items) => setDeployUrl(items.find((i) => i.title === "Wallet created")?.explorerUrl ?? null), () => undefined);
+      }
     } catch (e) {
       if (isNotAuthenticated(e)) return router.replace("/login");
       setError(messageOf(e));
@@ -65,8 +70,8 @@ function Creating() {
   const cards = (
     <div className="flex flex-col gap-3">
       <ShareCard icon={<Smartphone size={20} strokeWidth={1.75} />} title="You, on this phone" where="Encrypted on this phone. Face ID unlocks it." state={states.client} simulated={isMockMode} />
-      <ShareCard icon={<User size={20} strokeWidth={1.75} />} title="Your lawyer" where="Kept on your lawyer's own server." state={states.lawyer} simulated />
-      <ShareCard icon={<Lock size={20} strokeWidth={1.75} />} title="Swissquote" where="Kept at Swissquote." state={states.swissquote} simulated />
+      <ShareCard icon={<User size={20} strokeWidth={1.75} />} title="Your lawyer" where="Kept on your lawyer's own server." state={states.lawyer} simulated={isMockMode} />
+      <ShareCard icon={<Lock size={20} strokeWidth={1.75} />} title="Swissquote" where="Kept at Swissquote." state={states.swissquote} simulated={isMockMode} />
     </div>
   );
 
@@ -82,7 +87,11 @@ function Creating() {
         <div className="mt-6 flex flex-col items-center gap-4 text-center">
           <CheckHalo size={64} />
           <h1 role="status" className="text-[28px] font-semibold leading-8 text-ink">Your account is ready</h1>
-          <p className="text-base leading-6 text-muted">Your key now exists in three parts. No one holds the whole key, and any two parts can sign.</p>
+          <p className="text-base leading-6 text-muted">
+            {isMockMode
+              ? "Your key now exists in three parts. No one holds the whole key, and any two parts can sign."
+              : "Your wallet is a Safe smart account with three keys: one on this phone, one with your lawyer, one at Swissquote. Any two of them can approve a transaction."}
+          </p>
         </div>
         <div className="mt-6">{cards}</div>
         <div className="mt-6 flex flex-col items-start gap-2">
@@ -91,6 +100,11 @@ function Creating() {
           <a href={`${BASESCAN}${address}`} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center gap-1.5 text-sm text-info underline">
             View on Basescan <ExternalLink size={14} strokeWidth={1.75} aria-hidden="true" />
           </a>
+          {deployUrl && (
+            <a href={deployUrl} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center gap-1.5 text-sm text-info underline">
+              Wallet creation transaction <ExternalLink size={14} strokeWidth={1.75} aria-hidden="true" />
+            </a>
+          )}
           {isMockMode && <SimulatedPill>Simulated wallet address</SimulatedPill>}
         </div>
       </PageShell>
@@ -106,7 +120,7 @@ function Creating() {
   return (
     <PageShell
       title="Creating your wallet"
-      subtitle="Your key is created in three parts, together. Swissquote pays the network fees."
+      subtitle={isMockMode ? "Your key is created in three parts, together. Swissquote pays the network fees." : "Three keys are created for your wallet, together. Swissquote pays the network fees."}
       footer={error ? <Button onClick={run}>Try again</Button> : undefined}
     >
       <div aria-live="polite">{cards}</div>

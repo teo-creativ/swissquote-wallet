@@ -9,7 +9,7 @@ import { consoleIdentityOutcome, consoleOperatorActions } from "./console";
 import { ApiError } from "./errors";
 import { ownerCreate } from "./owner";
 import { identityVerify, recoveryCancel, recoveryStatus } from "./recovery";
-import { nodeSign, recoveryExecuted, recoveryOpen } from "./safe-recovery";
+import { nodeSign, recoveryAttach, recoveryExecuted, recoveryOpen } from "./safe-recovery";
 import { kyc, resolveAccount } from "./services";
 import { gasDeploy, gasExec } from "./sponsor";
 import { TEST_BANKING_ANSWER, testDeps } from "./testkit";
@@ -244,6 +244,22 @@ describe("recovery: P3 signs only when identity, delay and lawyer approval all h
     await r.verify();
     await recoveryCancel(r.deps, { recoveryId: r.recoveryId });
     expect(await code(nodeSign(r.at(121_000), { recoveryId: r.recoveryId, safeTxHash: r.hash, p2Signature: r.lawyerSig }))).toBe("403 RECOVERY_CANCELLED");
+  });
+  it("the new phone's key can be attached after the identity check, once, and P3 never signs without it", async () => {
+    const w = await withSafe();
+    const recoveryId = randomUUID();
+    await recoveryOpen(w.deps, { sqRef: w.sqRef, recoveryId, safeAddress: w.safe });
+    await identityVerify(w.deps, { recoveryId, selfie: "simulated", bankingAnswer: TEST_BANKING_ANSWER });
+    const later = w.at(121_000);
+    expect(await code(nodeSign(later, { recoveryId, safeTxHash: `0x${"1".repeat(64)}`, p2Signature: `0x${"2".repeat(130)}` }))).toBe("409 NOT_A_WALLET_RECOVERY");
+    const p1New = key();
+    expect(await recoveryAttach(w.deps, { recoveryId, newOwnerAddress: p1New.address })).toEqual({ attached: true });
+    expect(await recoveryAttach(w.deps, { recoveryId, newOwnerAddress: p1New.address })).toEqual({ attached: true });
+    expect(await code(recoveryAttach(w.deps, { recoveryId, newOwnerAddress: key().address }))).toBe("409 NEW_OWNER_SET");
+    const state = await w.chain.getSafeState(w.safe);
+    const tx = swapOwnerTx({ safe: w.safe, owners: state.owners, oldOwner: w.p1.address, newOwner: p1New.address });
+    const hash = safeTxHash({ safe: w.safe, tx, nonce: state.nonce });
+    expect(await code(nodeSign(later, { recoveryId, safeTxHash: hash, p2Signature: await w.p2.sign({ hash }) }))).toBe("no error");
   });
   it("opens only for the client's own wallet and only for a key that is not an owner yet", async () => {
     const w = await withSafe();

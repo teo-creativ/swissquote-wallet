@@ -2,7 +2,7 @@
 // Server actions of the console. Every action re-checks the password cookie: the layout gate does not protect actions.
 import { redirect } from "next/navigation";
 import { endSession, isAuthed, passwordMatches, startSession } from "@/lib/console.auth";
-import { cosignRelease, sendIdentityCheck, setNextIdentityOutcome } from "@/lib/console.mock";
+import { cosignRelease, sendIdentityCheck, setNextIdentityOutcome } from "@/lib/console.data";
 import type { ConsoleClient, IdentityOutcome, Recovery } from "@/lib/console.types";
 
 export type LoginState = { error?: string };

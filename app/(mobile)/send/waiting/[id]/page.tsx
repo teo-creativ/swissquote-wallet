@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { cancelTx, getTx } from "@/lib/sqkeys";
 import type { TxView } from "@/lib/sqkeys";
+import { isMockMode } from "@/lib/sqkeys.mode";
 import { Banner, Button, PageShell, SimulatedPill, Spinner } from "@/components/ui";
 import { Guard } from "../../../_lib/Guard";
 import { isNotAuthenticated, messageOf } from "../../../_lib/errors";
@@ -59,10 +60,10 @@ function Waiting({ id }: { id: string }) {
         <Spinner size={72} label="Waiting" />
         <h1 className="text-[28px] font-semibold leading-8 text-ink">Waiting for your lawyer</h1>
         <p className="text-base leading-6 text-muted">
-          Your lawyer received the request. Nothing is sent yet. If there is no answer within 48 hours, the transfer is cancelled and nothing is written on the blockchain.
+          Your lawyer received the request. Nothing is sent yet. {isMockMode ? "If there is no answer within 48 hours" : "If there is no answer in time"}, the transfer is cancelled and nothing is written on the blockchain.
         </p>
         {until && <p className="text-sm text-muted">The request stays open until {until}.</p>}
-        <SimulatedPill>Simulated lawyer (played by a team member)</SimulatedPill>
+        {isMockMode && <SimulatedPill>Simulated lawyer (played by a team member)</SimulatedPill>}
       </div>
       {error && <Banner variant="warning">{error}</Banner>}
     </PageShell>

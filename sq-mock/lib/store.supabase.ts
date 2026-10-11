@@ -180,6 +180,7 @@ export class SupabaseStore implements Store {
     if (patch.releaseAfter !== undefined) row.release_after = patch.releaseAfter;
     if (patch.cancelledAt !== undefined) row.cancelled_at = patch.cancelledAt;
     if (patch.usedAt !== undefined) row.used_at = patch.usedAt;
+    if (patch.newOwnerAddress !== undefined) row.new_owner_address = patch.newOwnerAddress;
     if (patch.safeTxHash !== undefined) row.safe_tx_hash = patch.safeTxHash;
     if (patch.p3SignedAt !== undefined) row.p3_signed_at = patch.p3SignedAt;
     if (patch.executedTxHash !== undefined) row.executed_tx_hash = patch.executedTxHash;
