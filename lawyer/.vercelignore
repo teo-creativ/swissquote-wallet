@@ -1,0 +1,5 @@
+# Never upload local secrets or build output.
+node_modules
+.next
+.env*
+!.env.example
