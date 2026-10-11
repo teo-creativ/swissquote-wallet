@@ -45,7 +45,38 @@ export type IdentityCheck = {
   usedAt: string | null;
   oldAddress: string | null;
   createdAt: string;
+  /** Safe mode (live): the account being recovered, the key that replaces P1, and what the P3 node signed. */
+  safeAddress?: string | null;
+  newOwnerAddress?: string | null;
+  safeTxHash?: string | null;
+  p3SignedAt?: string | null;
+  executedTxHash?: string | null;
 };
-export type IdentityCheckPatch = Partial<Pick<IdentityCheck, "outcome" | "identityVerifiedAt" | "releaseAfter" | "cancelledAt" | "usedAt">>;
+export type IdentityCheckPatch = Partial<Pick<IdentityCheck, "outcome" | "identityVerifiedAt" | "releaseAfter" | "cancelledAt" | "usedAt" | "newOwnerAddress" | "safeTxHash" | "p3SignedAt" | "executedTxHash">>;
 
 export type AuditEntry = { id: number; ts: string; action: string; payload: Record<string, unknown>; prevHash: string; entryHash: string };
+
+/** The P3 owner key of one account. The private key exists only encrypted (AES-256-GCM, SQ_SHARE_ENC_KEY); hex strings. */
+export type OwnerShare = {
+  sqRef: string;
+  generation: number;
+  address: string;
+  keyshareEnc: string;
+  nonce: string;
+  keyVersion: number;
+  createdAt: string;
+};
+/** Public data of a Safe of this bank's clients. */
+export type SafeAccount = {
+  sqRef: string;
+  safeAddress: string;
+  p1Address: string;
+  p2Address: string;
+  p3Address: string;
+  saltNonce: string;
+  deployTxHash: string | null;
+  createdAt: string;
+};
+export type SponsorKind = "deploy" | "exec";
+export type SponsorAction = { id: number; kind: SponsorKind; sqRef: string | null; safeAddress: string | null; txHash: string | null; createdAt: string };
+export type OperatorAction = { id: number; action: string; clientId: string | null; recoveryId: string | null; detail: Record<string, unknown>; createdAt: string };

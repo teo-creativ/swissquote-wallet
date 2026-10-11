@@ -1,14 +1,25 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Check, Copy } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { Banner, Button, PageShell } from "@/components/ui";
+import { getBalance } from "@/lib/sqkeys";
+import { isMockMode } from "@/lib/sqkeys.mode";
 import { Guard } from "../_lib/Guard";
 
 // C12. Address, copy button, QR code. The QR is black on white for reliable scanning.
 function Receive({ address }: { address: string }) {
   const [copied, setCopied] = useState(false);
+  const [usdc, setUsdc] = useState<string | null>(null);
+
+  // The real balance of this address on Base Sepolia, read from the chain.
+  useEffect(() => {
+    if (isMockMode) return;
+    let alive = true;
+    getBalance().then((b) => alive && setUsdc(b.usdc), () => undefined);
+    return () => { alive = false; };
+  }, []);
 
   async function copy() {
     try {
@@ -31,7 +42,13 @@ function Receive({ address }: { address: string }) {
           {copied ? "Copied" : "Copy address"}
         </Button>
         <span role="status" className="sr-only">{copied ? "Address copied" : ""}</span>
+        {usdc !== null && <p className="text-sm text-muted">Balance on this address: <span className="font-semibold text-ink">{usdc} USDC</span></p>}
         <Banner variant="info" className="w-full">Only send USDC on the Base network to this address. Testnet only: no real funds.</Banner>
+        {!isMockMode && (
+          <Banner variant="demo" className="w-full">
+            Need test USDC? Open faucet.circle.com, choose Base Sepolia and paste this address. You do not need ETH: Swissquote pays the network fees. Or use &ldquo;From Swissquote&rdquo; on the home screen.
+          </Banner>
+        )}
       </div>
     </PageShell>
   );

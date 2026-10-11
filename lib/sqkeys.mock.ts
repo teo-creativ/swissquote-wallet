@@ -1,6 +1,7 @@
 // Mock implementation of lib/sqkeys.ts (CDC annex D.1): realistic delays, in-memory state persisted in sessionStorage.
 // Nothing here talks to a server, touches a key or moves funds. Time-driven steps (lawyer decision, signing,
 // recovery delay) are computed lazily from timestamps, so they keep progressing across page reloads.
+import { inviteUrl } from "./urls";
 import { fromBase, toBase } from "./amounts";
 import { DEFAULT_POLICY, UNLIMITED_BASE, evaluatePolicy } from "./sqkeys.mock.policy";
 import type { PolicyDecision, PolicyKind } from "./sqkeys.mock.policy";
@@ -457,7 +458,7 @@ export async function inviteLawyer(clientDisplayName: string): Promise<{ inviteU
   s.invite = { token: randomHex(16), clientName: clientDisplayName, createdAt: now, expiresAt: now + INVITE_TTL_MS, accepted: false };
   if (s.status === "created") s.status = "awaiting_lawyer";
   save();
-  return { inviteUrl: `http://localhost:3001/invite/${s.invite.token}`, expiresAt: iso(s.invite.expiresAt) };
+  return { inviteUrl: inviteUrl(s.invite.token, process.env.NEXT_PUBLIC_LAWYER_URL, process.env.NODE_ENV), expiresAt: iso(s.invite.expiresAt) };
 }
 
 export async function getLawyerStatus(): Promise<{ status: "none" | "invited" | "accepted"; displayName?: string; expiresAt?: string }> {

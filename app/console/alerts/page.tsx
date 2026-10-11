@@ -1,7 +1,7 @@
 import { DataTable, StatusChip } from "@/components/ui";
 import type { Column } from "@/components/ui";
 import { formatDateTime } from "@/lib/console.logic";
-import { listAlerts } from "@/lib/console.mock";
+import { listAlerts } from "@/lib/console.data";
 import type { AlertSeverity, ComplianceAlert } from "@/lib/console.types";
 import { PageTitle } from "../PageTitle";
 

@@ -2,21 +2,21 @@
 
 **A self-custody wallet that Swissquote could launch: the client signs with their phone and face, a lawyer of their choice protects large or unusual moves, and Swissquote can never act alone.** The wallet is a **Safe 2-of-3 smart account** on Base Sepolia with three owner keys: the client's phone (P1), the client's lawyer (P2) and Swissquote (P3). Any two can sign; no single holder can. There is no seed phrase.
 
-> **It is a Safe smart account, not MPC.** MPC (DKLs23) was our first design and is documented as the target, but it is **not implemented**. Everything below that says "key" means one of three ordinary owner keys of a Safe.
+> **It is a Safe smart account, not MPC.** MPC (DKLs23) was our first design and is documented as the target, but it is **not in the app**: it exists only as research scripts in [`research/mpc`](research/mpc) (section 16). Everything below that says "key" means one of three ordinary owner keys of a Safe.
 > **Student prototype. Not an official Swissquote product. Testnet only (Base Sepolia): no real funds.**
 > Made for the Swissquote track of the BSA x EPFL hackathon (10-11 October 2026).
 
 | | URL | Notes |
 |---|---|---|
-| Client app | https://sq-keys-iota.vercel.app | Vercel project `sq-keys` |
-| Lawyer portal and P2 node | https://sq-keys-lawyer.vercel.app | Vercel project `sq-keys-lawyer` |
-| Swissquote mock and P3 node | the URL in `SQ_URL` (Vercel project `sq-mock`, team `teo-creativs-projects`) | P3 owner key encrypted at rest, gas sponsorship, demo bank transfers, recovery endpoints, HMAC-protected API; the URL is never hard-coded |
-| Swissquote console (inside the client app) | `<client app>/console` | password gate; reads the real sq-mock state |
-| Source | https://github.com/teo-creativ/swissquote-wallet | branch `teo/ui` |
+| Client app | https://sqk-app-theotime.vercel.app | Vercel project `sqk-app-theotime` |
+| Lawyer portal and P2 node | https://sqk-lawyer-theotime.vercel.app | Vercel project `sqk-lawyer-theotime` |
+| Swissquote mock and P3 node | https://sqk-mock-theotime.vercel.app (the client reads it from `SQ_URL`, Vercel project `sqk-mock-theotime`) | P3 owner key encrypted at rest, gas sponsorship, demo bank transfers, recovery endpoints, HMAC-protected API; the URL is never hard-coded |
+| Swissquote console (inside the client app) | https://sqk-app-theotime.vercel.app/console | password gate; reads the real sq-mock state |
+| Source | https://github.com/teo-creativ/swissquote-wallet | branch `theotime/sq` |
 
 **Read this first, honestly.** In live mode (`NEXT_PUBLIC_SQKEYS_MODE=live`) the wallet, the passkeys, the three owner keys, the sponsored gas, the lawyer's decisions, the transfers, the recovery and the console state are **real** and verified end to end on Base Sepolia (section 14). Only **three things are simulated, and each says so on screen with a "Simulated" pill: the Swissquote login, the identity check (KYC) and the bank account (CHF balance and rate)**. Mock mode still exists for design work and unit tests (`/dev/mock`).
 
-Contents: [2 Tour](#2-the-demo-script) · [3 Real vs simulated](#3-what-is-real-and-what-is-simulated) · [4 Architecture](#4-architecture) · [5 Custody and threats](#5-custody-model-decision) · [6 Wallet creation](#6-wallet-creation) · [7 Authentication](#7-authentication) · [8 Recovery and exit](#8-recovery-and-exit) · [9 Legal](#9-legal-feasibility) · [10 Business](#10-business-case) · [11 Gas sponsoring](#11-gas-sponsoring) · [12 Run locally](#12-run-it-locally) · [13 Deploy](#13-deployment) · [14 Tests](#14-test-plan-and-results) · [15 Limits](#15-known-limitations-and-next-steps) · [16 AI tools](#16-ai-tools-used) · [17 Team, repo, licences](#17-team-roles-repository-map-licences)
+Contents: [2 Tour](#2-the-demo-script) · [3 Real vs simulated](#3-what-is-real-and-what-is-simulated) · [4 Architecture](#4-architecture) · [5 Custody and threats](#5-custody-model-decision) · [6 Wallet creation](#6-wallet-creation) · [7 Authentication](#7-authentication) · [8 Recovery and exit](#8-recovery-and-exit) · [9 Legal](#9-legal-feasibility) · [10 Business](#10-business-case) · [11 Gas sponsoring](#11-gas-sponsoring) · [12 Run locally](#12-run-it-locally) · [13 Deploy](#13-deployment) · [14 Tests](#14-test-plan-and-results) · [15 Limits](#15-known-limitations-and-next-steps) · [16 Research: MPC and Bitcoin](#16-research-mpc-and-bitcoin) · [17 AI tools](#17-ai-tools-used) · [18 Team, repo, licences](#18-team-roles-repository-map-licences)
 
 ---
 
@@ -33,7 +33,7 @@ Live mode, two devices: **the client on a phone** (iPhone or Android, over HTTPS
 7. **Client:** send 1 USDC to the same (now known) recipient: **instant**, no lawyer.
 8. **Client:** send 5.50 USDC (limit 5.00): the lawyer must approve. A transfer to another new recipient that the lawyer **declines** sends nothing.
 9. **Attacker case:** in the Swissquote console set the next identity check to *fail*; on a second phone sign in and start a recovery. The identity check fails, the recovery ends refused, and the real owner keeps sending.
-10. **Recovery:** on a new phone: start recovery, identity check, a new passkey and key on the new phone, the lawyer approves, the safety delay runs (2 minutes in the demo, 8 seconds in the automated test), then the Safe's `swapOwner` replaces the old key. **The wallet address and the funds do not change.** The old phone is then refused; the new one sends.
+10. **Recovery:** on a new phone: start recovery, identity check, a new passkey and key on the new phone, the lawyer approves, the safety delay runs (15 seconds in the demo, 8 seconds in the automated test), then the Safe's `swapOwner` replaces the old key. **The wallet address and the funds do not change.** The old phone is then refused; the new one sends.
 11. **Console** (`/console`, demo password given on the day): recoveries, identity outcome switch, wallets created.
 
 Screenshots: see [`docs/screenshots/`](docs/screenshots/README.md).
@@ -59,15 +59,15 @@ flowchart LR
     PK["Passkey + PRF"]
     P1["P1: key wrapped in IndexedDB"]
   end
-  subgraph App["Client app server (Vercel sq-keys) + Supabase sq-keys-app"]
+  subgraph App["Client app server (Vercel sqk-app-theotime) + Supabase sqk-app"]
     API["/api/live/*: session, state, relay"]
     CON["Console /console"]
   end
-  subgraph Law["Lawyer portal and P2 node (Vercel sq-keys-lawyer) + Supabase"]
+  subgraph Law["Lawyer portal and P2 node (Vercel sqk-lawyer-theotime) + Supabase sqk-lawyer"]
     LUI["Lawyer UI: passkey approvals"]
     N2["P2 key + policy engine + journal"]
   end
-  subgraph SQ["sq-mock (Vercel sq-mock) + Supabase"]
+  subgraph SQ["sq-mock (Vercel sqk-mock-theotime) + Supabase sqk-app"]
     N3["P3 key, recovery conditions"]
     SP["Gas sponsor + bank (demo wallet)"]
     SVC["Login, identity check, CHF account: simulated"]
@@ -99,7 +99,7 @@ Separation rules (enforced by folders and `scripts/check-secrets.sh`): the clien
 
 ## 5. Custody model decision
 
-**Chosen: a Safe 2-of-3 smart account** (CDC plan B, section 3.9). The brief allows Safe. It gives a real address, real USDC, gas sponsoring and a recovery that keeps the same address. **MPC DKLs23 was the first choice and is not implemented**: we could not prove it in the time; it stays documented as the target design.
+**Chosen: a Safe 2-of-3 smart account** (CDC plan B, section 3.9). The brief allows Safe. It gives a real address, real USDC, gas sponsoring and a recovery that keeps the same address. **MPC DKLs23 was the first choice and is not in the app**: the integration was not finished in time. It works as standalone research scripts (section 16) and stays documented as the target design.
 
 | Holder | Key | Lives | Used for |
 |---|---|---|---|
@@ -120,7 +120,7 @@ Separation rules (enforced by folders and `scripts/check-secrets.sh`): the clien
 |---|---|
 | Plain self-custody with a seed phrase | Clients lose or leak phrases |
 | Custodial | That is the existing Swissquote Wallet |
-| MPC threshold signatures | Our first design; not proven in time, not implemented |
+| MPC threshold signatures | Our first design; works as research scripts (section 16), not integrated in the app in time |
 
 ### Threat model (Safe 2-of-3)
 
@@ -129,7 +129,7 @@ Separation rules (enforced by folders and `scripts/check-secrets.sh`): the clien
 | Who could steal funds? | Nobody alone: two owners are needed. A phone thief holds P1 only; the lawyer node signs automatically only within the policy (default 5 USDC per transaction, 10 USDC per 24 h, 3 per hour, 6 per day) and only to recipients the lawyer approved. Residual risk we state: up to 10 USDC per 24 h to approved recipients. |
 | Who could lock the client out? | No single failure. Lost phone: recovery with P2 + P3. Lawyer unreachable: transfers wait or time out; recovery needs the lawyer too. Swissquote gone: the exit kit (P1) plus the lawyer (P2). **Two failures at once lock funds**, for example a lost phone and an unreachable lawyer. |
 | Can Swissquote alone move funds? | No: one owner. |
-| Swissquote with the lawyer? | **Yes: P2 + P3 are two owners.** The product only uses them for `swapOwner` (recovery), but a deliberately modified pair of nodes could sign any transaction. What bounds it in the product: an independent lawyer chosen by the client; the identity check; the lawyer's passkey approval bound to the exact recovery; a delay (24 h in production, 2 minutes in the demo) that **P3 enforces by itself**; the client can cancel during the delay; the hash-chained journals. What is left is **collusion of two independent parties**. |
+| Swissquote with the lawyer? | **Yes: P2 + P3 are two owners.** The product only uses them for `swapOwner` (recovery), but a deliberately modified pair of nodes could sign any transaction. What bounds it in the product: an independent lawyer chosen by the client; the identity check; the lawyer's passkey approval bound to the exact recovery; a delay (24 h in production, 15 seconds in the demo) that **P3 enforces by itself**; the client can cancel during the delay; the hash-chained journals. What is left is **collusion of two independent parties**. |
 | Compromised lawyer server? | Holds P2 only. With a phone thief, the thresholds are gone. This is the price of automatic release. |
 | Compromised client app server? | Holds no key and cannot sign. It could refuse service or ship tampered code to the browser (the classic web-app limit); mitigated because the browser **rebuilds the Safe hash itself and refuses to sign anything that differs from what was typed**, and the nodes rebuild what they sign. |
 | Phone and e-mail stolen? | E-mail holds no key. A recovery needs the Swissquote identity check, which the attacker fails; P3 will not sign; the old phone keeps control. Tested end to end. |
@@ -149,7 +149,7 @@ Separation rules (enforced by folders and `scripts/check-secrets.sh`): the clien
 | Key | Born | Kept | At rest |
 |---|---|---|---|
 | P1 | The client's browser | IndexedDB | AES-256-GCM, key from HKDF-SHA256 over the passkey PRF output (or the labelled fallback) |
-| P2 | The lawyer node | table `shares` (`sq-keys-lawyer`) | AES-256-GCM, `LAWYER_SHARE_ENC_KEY`, bound to the client by the additional authenticated data |
+| P2 | The lawyer node | table `shares` (`sqk-lawyer`) | AES-256-GCM, `LAWYER_SHARE_ENC_KEY`, bound to the client by the additional authenticated data |
 | P3 | sq-mock | table `shares` (`sq-mock`) | AES-256-GCM, `SQ_SHARE_ENC_KEY` |
 
 Link to the Swissquote identity: sq-mock keeps `client <-> sq_ref <-> wallet address`. The client app and the lawyer portal only see the pseudonymous `sq_ref` and the address.
@@ -185,7 +185,7 @@ Link to the Swissquote identity: sq-mock keeps `client <-> sq_ref <-> wallet add
 2. Swissquote's (simulated) identity check runs; the console switch decides its result. On failure the recovery is refused and the account is active again.
 3. The new phone creates a passkey and a **new key P1'**. Swissquote and the lawyer node are told the new owner address.
 4. The lawyer approves with a passkey bound to (recovery, wallet, old owner read from the chain, new owner).
-5. The safety delay runs (24 h in production, 2 minutes in the demo). **P3 enforces it by itself**; the client can cancel during it.
+5. The safety delay runs (24 h in production, 15 seconds in the demo). **P3 enforces it by itself**; the client can cancel during it.
 6. The server rebuilds the `swapOwner` transaction. **P3 signs only if** the identity check passed, the delay elapsed, the recovery was not cancelled **and** P2's signature over that exact hash proves the lawyer approved. P2 + P3 sign, the sponsor executes. The old key is no longer an owner; the **wallet address is unchanged**.
 
 **Why an attacker with the stolen phone and e-mail is refused.** The e-mail holds no key and cannot start anything. Swissquote's identity check fails, so P3 never signs, whatever the lawyer does. Even a lawyer who approved cannot complete it alone. Tested: `npm run test:live` step 13.
@@ -273,15 +273,17 @@ npm run check-routes -- <url>   # after every deploy: no route may 404
 
 ## 13. Deployment
 
-Three Vercel projects and three Supabase projects, one per party:
+Three Vercel projects (one per party) and **two** Supabase projects:
 
-| Folder | Vercel project | Supabase project | SQL to paste, in order |
-|---|---|---|---|
-| `/` | `sq-keys` | `sq-keys-app` | `sql/001_init.sql`, `sql/002_safe_live.sql` |
-| `lawyer/` | `sq-keys-lawyer` | `sq-keys-lawyer` | `lawyer/sql/001_init.sql`, `lawyer/sql/002_safe_live.sql` |
-| `sq-mock/` | `sq-mock` (team `teo-creativs-projects`) | `sq-keys-mock` | `sq-mock/sql/001_init.sql`, `sq-mock/sql/002_safe_live.sql` |
+| Folder | Vercel project | URL | Supabase project | SQL to paste, in order |
+|---|---|---|---|---|
+| `/` | `sqk-app-theotime` | https://sqk-app-theotime.vercel.app | `sqk-app` (shared with sq-mock) | `sql/001_init.sql`, `sql/002_safe_live.sql` |
+| `lawyer/` | `sqk-lawyer-theotime` | https://sqk-lawyer-theotime.vercel.app | `sqk-lawyer` | `lawyer/sql/001_init.sql`, `lawyer/sql/002_safe_live.sql` |
+| `sq-mock/` | `sqk-mock-theotime` | https://sqk-mock-theotime.vercel.app | `sqk-app` (shared with the client app) | `sq-mock/sql/001_init.sql` (with `create table if not exists seen_nonces`), `sq-mock/sql/002_safe_live.sql` |
 
-Region: Vercel functions `fra1`, Supabase Frankfurt. **Deploy order: sq-mock, then lawyer, then client.** Passkeys are bound to the domains (`sq-keys-iota.vercel.app`, `sq-keys-lawyer.vercel.app`). `NEXT_PUBLIC_*` variables are inlined at build time: changing them needs a new deploy. After every deploy run `npm run check-routes -- <url>` and `npm run check-live`.
+**Why two Supabase projects and not three.** The design keeps one database per party. Supabase's free plan allows only **two active free projects per organisation owner**, and the third creation was refused. So the client app and sq-mock share the project `sqk-app`. Their tables do not collide except `seen_nonces`, which has the same columns on both sides and only stores random HMAC nonces. The lawyer keeps its own project, because its tables (`clients`, `invitations`, `shares`, `audit_log`, ...) collide with sq-mock's. What this costs: the client app server and sq-mock hold the same `service_role` key, so the database no longer separates them (the code still does: the client app never reads sq-mock's tables). On a paid plan, or with a third owner, `sq-mock` gets its own project again by changing only `SQ_SUPABASE_URL` and `SQ_SUPABASE_SERVICE_ROLE_KEY`.
+
+Region: Vercel functions `fra1`, Supabase Frankfurt. **Deploy order: sq-mock, then lawyer, then client.** Passkeys are bound to the domains (`sqk-app-theotime.vercel.app`, `sqk-lawyer-theotime.vercel.app`). `NEXT_PUBLIC_*` variables are inlined at build time: changing them needs a new deploy. After every deploy run `npm run check-routes -- <url>` and `npm run check-live`.
 
 Variables per project (**names only**):
 - **Client app:** `NEXT_PUBLIC_CHAIN_ID`, `NEXT_PUBLIC_EXPLORER_URL`, `NEXT_PUBLIC_SQKEYS_MODE` (= `live`), `NEXT_PUBLIC_LAWYER_MODE` (= `live`), `NEXT_PUBLIC_LAWYER_URL` (**required in production**), `RPC_URL`, `USDC_ADDRESS`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `SESSION_SECRET`, `LAWYER_URL`, `SQ_URL`, `APP_TO_LAWYER_SECRET`, `APP_TO_SQ_SECRET`, `ALLOW_NO_PRF`, `CONSOLE_PASSWORD`.
@@ -323,11 +325,24 @@ Secrets are never committed or printed; pair secrets are exchanged in person. Fu
 - The three simulated parts (Swissquote login, identity check, CHF account) are demo stand-ins by design.
 - No audit, no formal proof.
 
-Next steps, in order: verify on an iPhone and a Redmi; run the exit from the kit; database-level lock for policy evaluations; ERC-4337 sponsoring if wanted; MPC as a research track.
+Next steps, in order: verify on an iPhone and a Redmi; run the exit from the kit; database-level lock for policy evaluations; ERC-4337 sponsoring if wanted; MPC stays a research track (section 16).
 
 ---
 
-## 16. AI tools used
+## 16. Research: MPC and Bitcoin
+
+**The live demo is a Safe 2-of-3 smart account. It is not MPC**, and it has no Bitcoin feature. What follows is research code in [`research/mpc`](research/mpc), with its own `package.json`: it is not imported by any app, not built with them and not deployed.
+
+- **MPC (DKLs23 threshold ECDSA).** Standalone scripts and tests show a 3-party key generation, a signature by any two of the three parties, one real USDC transfer on Base Sepolia signed that way, two node processes talking over HMAC-signed HTTP on one machine, and tamper tests. It was **not integrated in the app** and **not verified on Vercel**; the demo uses a Safe because the MPC integration was not finished in time. Details and limits: [`research/mpc/README.md`](research/mpc/README.md).
+- **Bitcoin.** Bitcoin signing exists **only as a research script**: [`research/mpc/bitcoin`](research/mpc/bitcoin) builds a native SegWit (P2WPKH) spend on Bitcoin testnet4 and signs it with two of three DKLs23 parties. It is checked locally only: **no Bitcoin transaction has been broadcast yet** (the address must first be funded from a faucet). No Taproot, no fee estimation, no UTXO management. Details: [`research/mpc/bitcoin/README.md`](research/mpc/bitcoin/README.md).
+
+```
+cd research/mpc && npm ci
+npm test              # node core and Bitcoin tests
+npm run btc:dryrun    # Bitcoin spend with a fake UTXO, checked locally, nothing is sent
+```
+
+## 17. AI tools used
 
 | Tool | Used for |
 |---|---|
@@ -338,33 +353,33 @@ Next steps, in order: verify on an iPhone and a Redmi; run the exit from the kit
 
 ---
 
-## 17. Team, roles, repository map, licences
+## 18. Team, roles, repository map, licences
 
 | Person | Role | Branch |
 |---|---|---|
 | Téo | Design and front: `components/ui/`, `app/console/`, client screens, lawyer screens; live mode of the client, lawyer and sq-mock in this branch | `teo/ui` |
-| Aaron | Logic, MPC research (not used), HMAC, store and recovery code reused in sq-mock | `aaron/logic` |
+| Aaron | Logic, MPC research (`research/mpc`, not used by the demo), HMAC, store and recovery code reused in sq-mock | `aaron/logic` |
 | Théotime | `sq-mock/` scaffold, `exit/`, business case, the lawyer role in the demo | `theotime/sq` |
 
 ```
-/                  client app (Next.js)       Vercel: sq-keys
+/                  client app (Next.js)       Vercel: sqk-app-theotime
   app/(mobile)/    client screens, 430px column
   app/console/     Swissquote console (real sq-mock state in live mode)
   app/api/live/    the browser's only server door in live mode
   lib/live/        browser side of live mode: P1, passkey ceremony, calls
   lib/server/      server side of live mode: session, state, relay to the peers
   lib/sqkeys.ts    front contract (mock or live)
-lawyer/            lawyer portal and P2 node  Vercel: sq-keys-lawyer
+lawyer/            lawyer portal and P2 node  Vercel: sqk-lawyer-theotime
   lib/server/      WebAuthn, invitations, P2 key, policy, approvals, journal
-sq-mock/           Swissquote mock, P3 node, gas sponsor, bank   Vercel: sq-mock
+sq-mock/           Swissquote mock, P3 node, gas sponsor, bank   Vercel: sqk-mock-theotime
 exit/              exit script                                   (README only)
 shared/            source of shared code (Safe helpers, policy, HMAC, AES-GCM, db layer), copied by `npm run sync-shared`
 spike/             Safe spike and on-chain checks of the shared code
+research/mpc/      MPC (DKLs23) and Bitcoin research scripts, own package.json, not built, not deployed
 sql/ lawyer/sql/ sq-mock/sql/   database schemas with RLS (001 base, 002 Safe live)
 docs/              CDC_v3.1.md, SETUP_LIVE.md, LIVE_NOTES.md, LIVE_TEST_REPORT.md, CONTRACT_CHANGE.md, prompts/live/01-safe-live.md, ...
 ```
 
 Key documents: `docs/CDC_v3.1.md` (specification, in French), `docs/prompts/live/01-safe-live.md` (design of record for live mode), `docs/LIVE_NOTES.md` (decisions), `docs/CONTRACT_CHANGE.md` (signature and behavior notes for the other owners), `design.md`, `CLAUDE.md`.
 
-**Licences.** The Safe path uses open-source packages pinned to exact versions in each `package.json` (viem, @simplewebauthn, jose, Next.js). The MPC packages `@silencelaboratories/dkls-wasm-ll-web` and `-node` (1.2.0) remain in `package.json` from the first design but are **not used by live mode**; they are under the **Silence Laboratories Non-Commercial Use License Agreement**: commercial use needs a commercial licence. See [`NOTICE`](NOTICE), [`licenses/`](licenses/) and [`docs/THIRD_PARTIES.md`](docs/THIRD_PARTIES.md). This repository has no `LICENSE` file yet `[TEAM TO DECIDE]`.
-
+**Licences.** The Safe path uses open-source packages pinned to exact versions in each `package.json` (viem, @simplewebauthn, jose, Next.js). The MPC packages `@silencelaboratories/dkls-wasm-ll-web` and `-node` (1.2.0) remain in `package.json` from the first design but are **not used by live mode** (only by `research/mpc` and a WASM load check in the lawyer portal); they are under the **Silence Laboratories Non-Commercial Use License Agreement**: commercial use needs a commercial licence. See [`NOTICE`](NOTICE), [`licenses/`](licenses/) and [`docs/THIRD_PARTIES.md`](docs/THIRD_PARTIES.md). This repository has no `LICENSE` file yet `[TEAM TO DECIDE]`.

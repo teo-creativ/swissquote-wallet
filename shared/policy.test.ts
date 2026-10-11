@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_POLICY, UNLIMITED_BASE, evaluatePolicy } from "./sqkeys.mock.policy";
-import type { AutoDecision, PolicyConfig, PolicyInput } from "./sqkeys.mock.policy";
+import { DEFAULT_POLICY, UNLIMITED_BASE, evaluatePolicy } from "./policy";
+import type { AutoDecision, PolicyConfig, PolicyInput } from "./policy";
 
 // CDC 8.2 test vectors, default policy, approved recipient, no recent decision (T10 and T12 need a lock and a queue: not mocked).
 const APPROVED = "0x5aa1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3";

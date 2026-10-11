@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import { ToastProvider } from "@/components/ui";
-import { getMe } from "@/lib/lawyerApi";
+import { useRouter } from "next/navigation";
+import { LawyerApiError, getMe } from "@/lib/lawyerApi";
 import { MobileTabBar } from "./MobileTabBar";
 import { Sidebar } from "./Sidebar";
 import { SimulatedStrip } from "./SimulatedStrip";
@@ -12,6 +13,7 @@ import { TopBar } from "./TopBar";
 /** Strip, sidebar, top bar and mobile tab bar around the portal pages. Loads the lawyer's name once. */
 export function PortalChrome({ children }: { children: ReactNode }) {
   const [name, setName] = useState("Lawyer");
+  const router = useRouter();
 
   useEffect(() => {
     let cancelled = false;
@@ -19,14 +21,15 @@ export function PortalChrome({ children }: { children: ReactNode }) {
       (me) => {
         if (!cancelled) setName(me.displayName);
       },
-      () => {
-        /* Keep the neutral label: the pages show their own errors. */
+      (e) => {
+        // No session (live mode): go to the passkey sign-in. Other errors keep the neutral label; the pages show their own.
+        if (e instanceof LawyerApiError && e.code === "NOT_SIGNED_IN") router.replace("/login");
       },
     );
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [router]);
 
   return (
     <ToastProvider>

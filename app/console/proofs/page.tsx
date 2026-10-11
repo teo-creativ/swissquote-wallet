@@ -1,7 +1,7 @@
 import { DataTable, StatusChip } from "@/components/ui";
 import type { Column } from "@/components/ui";
 import { formatDateTime } from "@/lib/console.logic";
-import { listProofs } from "@/lib/console.mock";
+import { listProofs } from "@/lib/console.data";
 import type { OwnershipProof } from "@/lib/console.types";
 import { PageTitle } from "../PageTitle";
 

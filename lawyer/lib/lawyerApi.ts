@@ -1,6 +1,7 @@
 // Lawyer portal front contract (CDC annex D.2). The front imports ONLY this file (and its types).
-// NEXT_PUBLIC_LAWYER_MODE=mock (default) runs on the in-memory mock. "live" will call the portal routes (annex A.2):
-// Aaron swaps the bodies without touching these signatures.
+// NEXT_PUBLIC_LAWYER_MODE=mock (default) runs on the in-memory mock. "live" calls the real portal routes (lib/liveApi.ts, server code in
+// lib/server): signatures are unchanged.
+import * as live from "./liveApi";
 import * as mock from "./lawyerApi.mock";
 import type { ClientView, JournalView, PolicyEdit, RequestDetail, RequestStatus, RequestSummary } from "./lawyerApi.types";
 import { LawyerApiError } from "./lawyerApi.types";
@@ -13,7 +14,8 @@ export const IS_MOCK = MODE === "mock";
 
 function impl(): typeof mock {
   if (MODE === "mock") return mock;
-  throw new LawyerApiError("NOT_IMPLEMENTED", "Not implemented yet.");
+  if (MODE === "live") return live as unknown as typeof mock; // same function names and types as the mock
+  throw new LawyerApiError("NOT_IMPLEMENTED", "Unknown NEXT_PUBLIC_LAWYER_MODE.");
 }
 
 export function inspectInvitation(token: string): Promise<{ valid: boolean; clientDisplayName: string; expiresAt: string }> {

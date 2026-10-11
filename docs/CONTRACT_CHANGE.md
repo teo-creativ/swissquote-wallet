@@ -60,3 +60,24 @@ getMe(): Promise<{ displayName: string; clients: number; pendingRequests: number
 ```
 
 Live mode: the server must store the consent with its own UTC time (never the client clock) in the same transaction as the account, reject the call without `consent` (`CONSENT_REQUIRED`), and return it from `getMe`. `registerLawyer` in `lawyer/lib/passkey.ts` does not forward `consent` yet. The version is `LAWYER_TERMS_VERSION` in `lawyer/lib/legal.ts` ("1.0"), covering the role and data documents.
+
+## Live Safe mode, lawyer side (Step 4)
+No signature of `lawyer/lib/lawyerApi.ts` changed. In live mode its bodies call `lawyer/lib/liveApi.ts` (browser) and the routes `/api/portal/*`.
+Behavior notes for the other owners:
+- `decide()` and `updatePolicy()` run two requests: `.../options` (the server builds the WebAuthn challenge from the stored request or policy) then `.../verify` (the assertion). A cancelled prompt throws `LawyerApiError("PASSKEY_CANCELLED")`.
+- `getMe()` does not return `consent` in live mode (the terms version is not stored yet).
+- A request from the client app to the lawyer node is always server to server (HMAC): `/api/invite/register`, `/api/invite/status`, `/api/node/owner/create`, `/api/node/wallet/register`, `/api/node/transfer/request|status`, `/api/node/recovery/request|status`, `/api/node/exit/request|status`. The lawyer node calls the client app at `{APP_URL}/api/internal/lawyer-accepted` (HMAC).
+- `shared/policy.ts` is now the single policy engine (the client mock re-exports it).
+
+## Live Safe mode, client side (Step 5)
+Existing signatures of `lib/sqkeys.ts` are unchanged. In live mode they call `lib/live` (browser) and `app/api/live/<action>` (server).
+- **Additive export:** `continueRecoveryWallet(recoveryId, onProgress)`. Phones whose passkey cannot return the PRF secret at creation need a second tap. `createRecoveryWallet` then rejects with `SqKeysError("SECOND_TAP_REQUIRED")` and the screen calls `continueRecoveryWallet` from its own button. In mock mode it behaves like `createRecoveryWallet`.
+- **Behavior in live mode:**
+  - `createDevicePasskey(label)` registers the PUBLIC address of P1, which the key screen generated and wrapped in this browser right after the passkey ceremony (the key screen calls `lib/live/ceremony.ts`).
+  - `sendUsdc` starts the passkey prompt first (iOS) and rebuilds the Safe hash itself; it resolves after the server accepted the signature (AUTO is already confirmed, LAWYER waits). `getTx` drives the rest.
+  - `revokeDevice`, `simulateApp` and `approveApp` throw `NOT_AVAILABLE` (the screens hide them in live mode): removing a phone key on a Safe is a recovery (swapOwner), and app approvals are out of the live scope.
+  - Recovery keeps the wallet ADDRESS (swapOwner): `RecoveryView.oldAddress` and `newAddress` are both the Safe address.
+  - `Account.devices[].current` is set in the browser by comparing the device's public owner address with the key held locally.
+- **Console:** `lib/console.data.ts` reads sq-mock through its console routes in live mode. `Recovery` gained an optional `real` field (real state, no simulated timers).
+- **New server routes (client app):** `POST /api/live/<action>` (session + same origin), `POST /api/internal/lawyer-accepted` (HMAC from the lawyer node).
+- **New routes on the peers (HMAC):** lawyer `/api/node/transfer/check`, `/api/node/policy`; sq-mock `/api/recovery/attach`.

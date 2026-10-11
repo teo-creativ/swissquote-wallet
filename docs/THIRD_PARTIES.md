@@ -1,6 +1,6 @@
 # Third-party services and libraries
 
-Audit of the third parties used or planned by SQ Keys (CDC 9.9 point 8, CDC 9.6). Written from what the repository contains. Status is the state of the branch: "planned" means written down but not called by the code. Aaron checks the unknown values against each provider's current terms. See also `NOTICE` for the MPC library licence.
+Services and libraries the prototype relies on (CDC 9.9 #8). Status is the state of this branch: "planned" means written down but not called by the code. Unknown countries are marked `[TO VERIFY]`; Aaron checks them against each provider's current terms. See also `NOTICE` for the DKLs23 library licence. The live demo is a Safe 2-of-3 smart account, not MPC.
 
 Rules used in this file:
 - A value is given only when a file of the repository proves it. The source is named in the last column.
@@ -30,16 +30,8 @@ Versions are the exact versions pinned in `package.json` and `lawyer/package.jso
 
 | Library | Version | Purpose | Data it handles | License | Terms / source |
 |---|---|---|---|---|---|
-| Silence Laboratories DKLs23, `@silencelaboratories/dkls-wasm-ll-web` (browser) and `-node` (servers) | 1.2.0 | MPC 2-of-3: key generation and threshold ECDSA signing. | Key shares and protocol messages, in memory only, in the browser (P1) or in the node of each party (P2, P3). | **SLL**: Silence Laboratories Non-Commercial Use License Agreement. Non-commercial only; commercial use needs a licence from the owner (CDC 9.7). Owner: Silence Laboratories Pte. Ltd., incorporated in Singapore (stated in the licence text). | Licence text in `licenses/SILENCE-LABORATORIES-LICENSE.md`, `LICENSE.md` in the package, `NOTICE`, https://github.com/silence-laboratories/dkls23 |
-| SimpleWebAuthn, `@simplewebauthn/browser` and `@simplewebauthn/server` | 14.0.0 and 14.0.3 | Passkey registration and verification (client and lawyer). | Passkey public keys, challenges, assertions. Biometric data stays in the device and is never seen by the library. | MIT | https://simplewebauthn.dev |
-| viem | 2.57.4 | Addresses, EIP-1559 transactions, message hashing, signature recovery, RPC client. | Wallet addresses, unsigned and signed transactions. It sends requests only to the RPC URL we configure. | MIT | https://viem.sh |
-| noble-curves, `@noble/curves` | 2.4.0 | Decompression of the MPC public key (secp256k1). | Public key only. | MIT | TO VERIFY (project page) |
-| `@supabase/supabase-js` | 2.117.3 | Database client, server side only, with the `service_role` key. | Everything listed for the Supabase projects above. | MIT | https://supabase.com |
-| jose | 6.2.12 | Signed session tokens in cookies. | Session identifiers. | MIT | TO VERIFY (project page) |
-| canonicalize | 5.1.0 | Canonical JSON (RFC 8785) for the audit journal. | Journal entries. | Apache-2.0 | TO VERIFY (project page) |
-| Next.js, React | 16.4.0, 19.3.0 | Web framework. | All pages and API routes. Next.js telemetry setting: TO VERIFY | MIT | TO VERIFY (project pages) |
-| lucide-react, qrcode.react | 1.55.0, 4.2.0 | Icons, QR code of the wallet address (rendered locally). | Wallet address (QR code), in the browser only. | ISC | TO VERIFY (project pages) |
-| Fonts Outfit and Poppins, `@fontsource-variable/outfit`, `@fontsource/poppins` | 5.3.0 | Typography. Self-hosted: the browser does not call a font service. | None. | OFL-1.1 | `docs/ASSETS.md`. In use |
+| `@silencelaboratories/dkls-wasm-ll-web` and `-node` 1.2.0 | DKLs23 threshold signing (MPC), research only | None in the demo. In `research/mpc`: test key shares, in memory and in local git-ignored files | Singapore | Silence Laboratories Non-Commercial Use License Agreement (SLL), text in `licenses/SILENCE-LABORATORIES-LICENSE.md` | **Not used by the live demo.** Used only by `research/mpc/` (research scripts, outside the app build and Vercel) and by the lawyer health route `lawyer/app/api/node/health/route.ts` (checks that the WASM loads, signs nothing). The `-web` package is still in the root `package.json` for the load-only stub `lib/mpc/client.ts`, which no screen imports. Non-commercial only; commercial use needs a licence from the owner |
+| `@fontsource-variable/outfit`, `@fontsource/poppins` | Fonts | none | n/a | OFL-1.1 | In use |
 
 ## 3. What no third party receives
 

@@ -21,7 +21,29 @@ function formatLeft(ms: number): string {
   return m > 0 ? `${m} min ${s % 60} s` : `${s} s`;
 }
 
+export const REASON_AUTOMATIC = "Swissquote signs by itself once the identity check passed, the safety delay is over and the lawyer approved.";
+
+/** Live mode: the state is real, so nothing is simulated by timers. P3 signs on its own; the console only shows it. */
+function deriveReal(r: Recovery & { real: NonNullable<Recovery["real"]> }, now: number): RecoveryView {
+  const { real } = r;
+  const releaseAfter = real.releaseAfter;
+  const delayElapsed = releaseAfter !== null && now >= releaseAfter;
+  const done = r.cosignedAt !== null;
+  let status: RecoveryStatus;
+  if (r.cancelledAt !== null) status = "cancelled";
+  else if (done) status = "completed";
+  else if (real.identity === "failed") status = "blocked";
+  else if (real.identity === "verified") status = "in_progress";
+  else status = "pending";
+  return {
+    ...r, identity: real.identity, identityVerifiedAt: real.identityVerifiedAt, identityFailedAt: real.identityFailedAt, lawyer: real.lawyer,
+    lawyerApprovedAt: real.lawyerApprovedAt, releaseAfter, delayElapsed, msLeft: releaseAfter === null ? null : Math.max(0, releaseAfter - now), status,
+    canCosign: false, cosignBlockedReason: done ? null : r.cancelledAt !== null ? REASON_CANCELLED : real.identity === "failed" ? REASON_IDENTITY_FAILED : REASON_AUTOMATIC,
+  };
+}
+
 export function deriveRecovery(r: Recovery, now: number): RecoveryView {
+  if (r.real) return deriveReal(r as Recovery & { real: NonNullable<Recovery["real"]> }, now);
   let identity: IdentityState = "not_requested";
   let identityVerifiedAt: number | null = null;
   let identityFailedAt: number | null = null;

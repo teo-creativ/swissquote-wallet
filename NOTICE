@@ -6,8 +6,18 @@ SQ Keys is a student prototype (BSA x EPFL hackathon, Swissquote track). It is n
 Silence Laboratories DKLs23 library (MPC)
 ================================================================================
 
-Packages:   @silencelaboratories/dkls-wasm-ll-web  1.2.0   (client app)
-            @silencelaboratories/dkls-wasm-ll-node 1.2.0   (lawyer portal)
+Packages:   @silencelaboratories/dkls-wasm-ll-web  1.2.0
+            @silencelaboratories/dkls-wasm-ll-node 1.2.0
+
+Where they are used: NOT by the live demo. The live demo is a Safe 2-of-3 smart
+account with three ordinary owner keys; it does no MPC. The DKLs23 packages are
+used only by:
+  - research/mpc/ (research scripts and tests, outside the app build and
+    outside Vercel): the -node package;
+  - lawyer/app/api/node/health/route.ts (a check that the Node WASM package
+    loads; it creates no key and signs nothing): the -node package;
+  - lib/mpc/client.ts (a load-only stub that no screen imports): the -web
+    package, still listed in the root package.json.
 Owner:      Silence Laboratories Pte. Ltd. (Singapore, UEN 201938700D)
 Licence:    "Silence Laboratories' Non-Commercial Use License Agreement"
             (package.json field "license": "SLL"), last modified 12-02-2024.
@@ -21,7 +31,7 @@ Notice required by the licence (section 1.1.c.iii):
   are licensed under the Silence Laboratories License Agreement,
   Copyright © Silence Laboratories Pte. Ltd. All Rights Reserved.
 
-This project uses the Library. The Library files are installed from npm at the
+This repository uses the Library only as described above. The Library files are installed from npm at the
 exact version above and are not modified by this project.
 
 What the licence says about use (section 9, quoted):

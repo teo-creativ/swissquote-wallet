@@ -1,6 +1,6 @@
 import { CopyField, DataTable, StatusChip } from "@/components/ui";
 import type { Column } from "@/components/ui";
-import { listClients } from "@/lib/console.mock";
+import { listClients } from "@/lib/console.data";
 import type { ClientStatus, ConsoleClient } from "@/lib/console.types";
 import { ClientBadge } from "../chips";
 import { PageTitle } from "../PageTitle";

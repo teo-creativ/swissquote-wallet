@@ -4,7 +4,7 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { HMAC_NONCE_TTL_MS } from "../src/shared/hmac";
 import type { Store } from "./store";
 import type {
-  AuditEntry, Call, Client, ClientPatch, ComplianceAlert, GasDrip, IdentityCheck, IdentityCheckPatch, OwnershipProof, Transfer, WalletLink,
+  AuditEntry, Call, Client, ClientPatch, ComplianceAlert, GasDrip, IdentityCheck, IdentityCheckPatch, OperatorAction, OwnerShare, OwnershipProof, SafeAccount, SponsorAction, SponsorKind, Transfer, WalletLink,
 } from "./types";
 
 type Row = Record<string, any>;
@@ -40,8 +40,23 @@ const toCall = (r: Row): Call => ({ id: r.id, clientId: r.client_id, reason: r.r
 const toCheck = (r: Row): IdentityCheck => ({
   recoveryId: r.recovery_id, clientId: r.client_id, outcome: r.outcome, identityVerifiedAt: iso(r.identity_verified_at),
   releaseAfter: iso(r.release_after), cancelledAt: iso(r.cancelled_at), usedAt: iso(r.used_at), oldAddress: r.old_address,
-  createdAt: iso(r.created_at)!,
+  createdAt: iso(r.created_at)!, safeAddress: r.safe_address ?? null, newOwnerAddress: r.new_owner_address ?? null,
+  safeTxHash: r.safe_tx_hash ?? null, p3SignedAt: iso(r.p3_signed_at ?? null), executedTxHash: r.executed_tx_hash ?? null,
 });
+// bytea columns travel as PostgREST hex strings (backslash x prefix); the domain keeps plain hex.
+const BYTEA_PREFIX = "\\x";
+const toBytea = (hex: string) => BYTEA_PREFIX + hex;
+const fromBytea = (v: string) => (v.startsWith(BYTEA_PREFIX) ? v.slice(BYTEA_PREFIX.length) : v);
+const toShare = (r: Row): OwnerShare => ({
+  sqRef: r.client_id, generation: r.generation, address: r.address, keyshareEnc: fromBytea(r.keyshare_enc), nonce: fromBytea(r.nonce),
+  keyVersion: r.key_version, createdAt: iso(r.created_at)!,
+});
+const toSafe = (r: Row): SafeAccount => ({
+  sqRef: r.sq_ref, safeAddress: r.safe_address, p1Address: r.p1_address, p2Address: r.p2_address, p3Address: r.p3_address, saltNonce: r.salt_nonce,
+  deployTxHash: r.deploy_tx_hash, createdAt: iso(r.created_at)!,
+});
+const toSponsor = (r: Row): SponsorAction => ({ id: r.id, kind: r.kind, sqRef: r.sq_ref, safeAddress: r.safe_address, txHash: r.tx_hash, createdAt: iso(r.created_at)! });
+const toOperator = (r: Row): OperatorAction => ({ id: r.id, action: r.action, clientId: r.client_id, recoveryId: r.recovery_id, detail: r.detail, createdAt: iso(r.created_at)! });
 const toAudit = (r: Row): AuditEntry => ({ id: r.id, ts: iso(r.ts)!, action: r.action, payload: r.payload, prevHash: r.prev_hash, entryHash: r.entry_hash });
 
 export class SupabaseStore implements Store {
@@ -151,6 +166,7 @@ export class SupabaseStore implements Store {
     return inserted(await this.db.from("identity_checks").insert({
       recovery_id: c.recoveryId, client_id: c.clientId, outcome: c.outcome, identity_verified_at: c.identityVerifiedAt,
       release_after: c.releaseAfter, cancelled_at: c.cancelledAt, used_at: c.usedAt, old_address: c.oldAddress, created_at: c.createdAt,
+      safe_address: c.safeAddress ?? null, new_owner_address: c.newOwnerAddress ?? null,
     }));
   }
   async getIdentityCheck(recoveryId: string) {
@@ -164,10 +180,61 @@ export class SupabaseStore implements Store {
     if (patch.releaseAfter !== undefined) row.release_after = patch.releaseAfter;
     if (patch.cancelledAt !== undefined) row.cancelled_at = patch.cancelledAt;
     if (patch.usedAt !== undefined) row.used_at = patch.usedAt;
+    if (patch.newOwnerAddress !== undefined) row.new_owner_address = patch.newOwnerAddress;
+    if (patch.safeTxHash !== undefined) row.safe_tx_hash = patch.safeTxHash;
+    if (patch.p3SignedAt !== undefined) row.p3_signed_at = patch.p3SignedAt;
+    if (patch.executedTxHash !== undefined) row.executed_tx_hash = patch.executedTxHash;
     unwrap(await this.db.from("identity_checks").update(row).eq("recovery_id", recoveryId));
   }
   async listIdentityChecks() {
     return (unwrap(await this.db.from("identity_checks").select("*").order("created_at", { ascending: false })) ?? []).map(toCheck);
+  }
+
+  async insertOwnerShareIfAbsent(s: OwnerShare) {
+    return inserted(await this.db.from("shares").insert({
+      client_id: s.sqRef, generation: s.generation, party_id: 3, public_key: s.address, address: s.address, keyshare_enc: toBytea(s.keyshareEnc),
+      nonce: toBytea(s.nonce), key_version: s.keyVersion, status: "active", created_at: s.createdAt,
+    }));
+  }
+  async getOwnerShare(sqRef: string) {
+    const r = unwrap(await this.db.from("shares").select("*").eq("client_id", sqRef).eq("status", "active").order("generation", { ascending: false }).limit(1).maybeSingle());
+    return r ? toShare(r) : null;
+  }
+
+  async insertSafeAccountIfAbsent(a: SafeAccount) {
+    return inserted(await this.db.from("safe_accounts").insert({
+      sq_ref: a.sqRef, safe_address: a.safeAddress, p1_address: a.p1Address, p2_address: a.p2Address, p3_address: a.p3Address, salt_nonce: a.saltNonce,
+      deploy_tx_hash: a.deployTxHash, created_at: a.createdAt,
+    }));
+  }
+  async getSafeAccount(sqRef: string) {
+    const r = unwrap(await this.db.from("safe_accounts").select("*").eq("sq_ref", sqRef).maybeSingle());
+    return r ? toSafe(r) : null;
+  }
+  async getSafeAccountByAddress(address: string) {
+    const r = unwrap(await this.db.from("safe_accounts").select("*").eq("safe_address", address).maybeSingle());
+    return r ? toSafe(r) : null;
+  }
+  async listSafeAccounts() {
+    return (unwrap(await this.db.from("safe_accounts").select("*").order("created_at", { ascending: false })) ?? []).map(toSafe);
+  }
+
+  async addSponsorAction(a: Omit<SponsorAction, "id">) {
+    unwrap(await this.db.from("sponsor_actions").insert({ kind: a.kind, sq_ref: a.sqRef, safe_address: a.safeAddress, tx_hash: a.txHash, created_at: a.createdAt }));
+  }
+  async countSponsorActionsSince(kind: SponsorKind, since: string, safeAddress?: string) {
+    let q = this.db.from("sponsor_actions").select("id", { count: "exact", head: true }).eq("kind", kind).gte("created_at", since);
+    if (safeAddress !== undefined) q = q.eq("safe_address", safeAddress);
+    const { count, error } = await q;
+    unwrap({ data: null, error });
+    return count ?? 0;
+  }
+
+  async addOperatorAction(a: Omit<OperatorAction, "id">) {
+    unwrap(await this.db.from("operator_actions").insert({ action: a.action, client_id: a.clientId, recovery_id: a.recoveryId, detail: a.detail, created_at: a.createdAt }));
+  }
+  async listOperatorActions() {
+    return (unwrap(await this.db.from("operator_actions").select("*").order("created_at", { ascending: false }).limit(200)) ?? []).map(toOperator);
   }
 
   async getLastAuditHash() {
