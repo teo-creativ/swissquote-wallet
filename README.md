@@ -36,6 +36,22 @@ Live mode, two devices: **the client on a phone** (iPhone or Android, over HTTPS
 10. **Recovery:** on a new phone: start recovery, identity check, a new passkey and key on the new phone, the lawyer approves, the safety delay runs (15 seconds in the demo, 8 seconds in the automated test), then the Safe's `swapOwner` replaces the old key. **The wallet address and the funds do not change.** The old phone is then refused; the new one sends.
 11. **Console** (`/console`, demo password given on the day): recoveries, identity outcome switch, wallets created.
 
+┌──────────────────────────────┬─────────────────────────────────────────────┬────────────────────────────────────────────────────────────────────────┐
+│             Page             │                     URL                     │                              Identifiants                              │
+├──────────────────────────────┼─────────────────────────────────────────────┼────────────────────────────────────────────────────────────────────────┤
+│ App client (à ouvrir sur un  │ https://sqk-app-theotime.vercel.app         │ Client ID : client.lea (ou client.demo)<br>Password : demo-0bc7aa39    │
+│ téléphone)                   │                                             │                                                                        │
+├──────────────────────────────┼─────────────────────────────────────────────┼────────────────────────────────────────────────────────────────────────┤
+│ Portail avocat (à ouvrir sur │ https://sqk-lawyer-theotime.vercel.app      │ Aucun mot de passe : l'avocat s'inscrit avec le lien d'invitation que  │
+│  un ordinateur)              │                                             │ l'app client génère, puis crée sa passkey.                             │
+├──────────────────────────────┼─────────────────────────────────────────────┼────────────────────────────────────────────────────────────────────────┤
+│ Console Swissquote           │ https://sqk-app-theotime.vercel.app/console │ Password : 4HdVKqRXh9YxiECX                                            │
+├──────────────────────────────┼─────────────────────────────────────────────┼────────────────────────────────────────────────────────────────────────┤
+│ Question bancaire (pendant   │ —                                           │ Réponse : geneva                                                       │
+│ une recovery)                │                                             │                                                                        │
+└──────────────────────────────┴─────────────────────────────────────────────┴────────────────────────────────────────────────────────────────────────┘
+
+
 Screenshots: see [`docs/screenshots/`](docs/screenshots/README.md).
 
 | Client | Lawyer | Console |
