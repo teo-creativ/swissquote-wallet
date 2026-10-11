@@ -8,7 +8,7 @@ alter table lawyer_passkeys add column if not exists device_type text;
 alter table lawyer_passkeys add column if not exists backed_up boolean;
 alter table lawyer_passkeys add column if not exists last_used_at timestamptz;
 alter table invitations add column if not exists used_at timestamptz;
-alter table invitations add column if not exists client_hint text;
+alter table invitations add column if not exists pending_lawyer_id uuid references lawyers(id);
 alter table webauthn_challenges add column if not exists used_at timestamptz;
 
 -- Transfers: what the node rebuilt itself, and the P2 signature produced after approval (a signature is not a secret).

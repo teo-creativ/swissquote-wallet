@@ -60,3 +60,11 @@ getMe(): Promise<{ displayName: string; clients: number; pendingRequests: number
 ```
 
 Live mode: the server must store the consent with its own UTC time (never the client clock) in the same transaction as the account, reject the call without `consent` (`CONSENT_REQUIRED`), and return it from `getMe`. `registerLawyer` in `lawyer/lib/passkey.ts` does not forward `consent` yet. The version is `LAWYER_TERMS_VERSION` in `lawyer/lib/legal.ts` ("1.0"), covering the role and data documents.
+
+## Live Safe mode, lawyer side (Step 4)
+No signature of `lawyer/lib/lawyerApi.ts` changed. In live mode its bodies call `lawyer/lib/liveApi.ts` (browser) and the routes `/api/portal/*`.
+Behavior notes for the other owners:
+- `decide()` and `updatePolicy()` run two requests: `.../options` (the server builds the WebAuthn challenge from the stored request or policy) then `.../verify` (the assertion). A cancelled prompt throws `LawyerApiError("PASSKEY_CANCELLED")`.
+- `getMe()` does not return `consent` in live mode (the terms version is not stored yet).
+- A request from the client app to the lawyer node is always server to server (HMAC): `/api/invite/register`, `/api/invite/status`, `/api/node/owner/create`, `/api/node/wallet/register`, `/api/node/transfer/request|status`, `/api/node/recovery/request|status`, `/api/node/exit/request|status`. The lawyer node calls the client app at `{APP_URL}/api/internal/lawyer-accepted` (HMAC).
+- `shared/policy.ts` is now the single policy engine (the client mock re-exports it).
