@@ -5,6 +5,8 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
+  // A second dev server for the same project (the live end-to-end test) needs its own build folder.
+  distDir: process.env.NEXT_DIST_DIR || ".next",
   webpack: (config) => {
     config.experiments = { ...config.experiments, asyncWebAssembly: true, layers: true };
     return config;

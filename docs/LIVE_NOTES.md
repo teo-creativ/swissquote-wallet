@@ -55,3 +55,7 @@ Real: Swissquote login (sq-mock, still simulated and labelled), session cookie (
 - A pending transfer holds the Safe nonce: one transfer waiting for the lawyer at a time (`TRANSFER_IN_PROGRESS`). If the wallet moves on before the lawyer answers, the transfer fails with a clear message.
 - Cancelling a waiting transfer drops the stored P1 signature; the lawyer's request is left to expire.
 - Tests: `npm test` (29 tests of the live server with scripted peers: session, invitation, wallet, send AUTO/LAWYER/refused/stale/wrong phone, bank, recovery incl. attacker and double execute). Browser parts (IndexedDB, passkey prompts) are covered by the end-to-end test of Step 6.
+
+## Step 6 (end-to-end proof)
+`npm run test:live` (scripts/live-e2e.ts) starts the three apps in dev mode (ports 3200, 3201, 3202, in-memory databases, random secrets, the client with its own build folder `.next-live` so it can run next to a normal dev server) and plays the demo script with Chrome virtual authenticators (PRF). Last run: PASSED, 18 steps, report and Basescan links in `docs/LIVE_TEST_REPORT.md`. Each full run spends about 9 test USDC from the demo wallet.
+Bugs the test found and that are fixed: the lawyer's decline was shown as a policy refusal; the lawyer's Approve button for a recovery stayed disabled because the lawyer node did not know the identity check had passed (the client app now passes "verified" when it asks for approval; Swissquote's node still checks by itself before signing).

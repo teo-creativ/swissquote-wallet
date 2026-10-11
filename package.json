@@ -21,7 +21,8 @@
     "doctor": "tsx scripts/doctor.ts",
     "test:e2e": "node scripts/e2e.mjs",
     "check-routes": "tsx scripts/check-routes.ts",
-    "check-live": "tsx scripts/check-live.ts"
+    "check-live": "tsx scripts/check-live.ts",
+    "test:live": "tsx scripts/live-e2e.ts"
   },
   "dependencies": {
     "@fontsource-variable/outfit": "5.3.0",

@@ -227,7 +227,7 @@ describe("sending USDC: P1 signs in the browser, the lawyer node decides, the sp
     const { prep, p1Signature } = await prepareAndSign(w);
     await live.transferSubmit(w.ctx, w.id, { requestId: prep.requestId, p1Signature });
     w.peers.lawyerReq = { status: "refused", signature: undefined };
-    expect(await live.transferStatus(w.ctx, w.id, { requestId: prep.requestId })).toMatchObject({ status: "refused" });
+    expect(await live.transferStatus(w.ctx, w.id, { requestId: prep.requestId })).toMatchObject({ status: "refused", outcome: "LAWYER" });
     expect(w.peers.ofPath("/api/gas/exec")).toHaveLength(0);
     expect((await w.ctx.db.select("tx_requests", { id: prep.requestId }))[0].p1_signature).toBeNull();
 

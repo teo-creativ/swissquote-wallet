@@ -19,3 +19,4 @@ docs/mockups/
 # Playwright
 test-results/
 playwright-report/
+.next-live

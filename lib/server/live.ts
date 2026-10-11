@@ -349,7 +349,7 @@ export async function transferStatus(ctx: Ctx, id: string, input: Input): Promis
   if (r.status === "pending_lawyer") {
     const res = await ctx.lawyer.get<{ status: string; signature?: Hex }>("/api/node/transfer/status", { sqRef: a.sq_ref, requestId: r.lawyer_request_id });
     if (res.status === "approved" && res.signature) r = await execute(ctx, a, r, res.signature);
-    else if (res.status === "refused") r = (await setTx(ctx, r.id, { status: "refused", outcome: "REFUSED", p1_signature: null }))[0];
+    else if (res.status === "refused") r = (await setTx(ctx, r.id, { status: "refused", p1_signature: null }))[0]; // outcome stays LAWYER: "Your lawyer declined this transfer"
     else if (res.status === "expired") r = (await setTx(ctx, r.id, { status: "expired", p1_signature: null }))[0];
   }
   return txView(ctx, r);
@@ -454,7 +454,7 @@ export async function recoveryAttach(ctx: Ctx, id: string, input: Input) {
   const owner = addr(input, "ownerAddress");
   if (r.new_owner_address && r.new_owner_address !== owner.toLowerCase()) throw new ApiError(409, "NEW_OWNER_SET", "The new key of this recovery is already set.");
   await ctx.sq.post("/api/recovery/attach", { recoveryId: r.id, newOwnerAddress: owner });
-  await ctx.lawyer.post("/api/node/recovery/request", { sqRef: a.sq_ref, recoveryId: r.id, safeAddress: getAddress(a.wallet_address), newOwnerAddress: owner });
+  await ctx.lawyer.post("/api/node/recovery/request", { sqRef: a.sq_ref, recoveryId: r.id, safeAddress: getAddress(a.wallet_address), newOwnerAddress: owner, identity: "verified" });
   await ctx.db.update("recoveries", { id: r.id }, { status: "awaiting_approval_and_delay", new_owner_address: owner.toLowerCase(), new_credential_id: text(input, "credentialId", 400) });
   return { newAddress: getAddress(a.wallet_address) };
 }

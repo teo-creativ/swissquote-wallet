@@ -488,7 +488,9 @@ describe("recovery and exit: always the lawyer, always bound to a passkey", () =
     expect(list[0].kind).toBe("recovery");
     expect((await clientViews(w.ctx, w.lawyerId))[0].status).toBe("recovering");
     const detail = await requestDetail(w.ctx, w.lawyerId, { id: (req as any).requestId });
-    expect(detail.recovery).toMatchObject({ oldAddress: getAddress(w.safe), newAddress: getAddress(newOwner) });
+    expect(detail.recovery).toMatchObject({ oldAddress: getAddress(w.safe), newAddress: getAddress(newOwner), identity: "pending" });
+    const verified = await recoveryRequest(w.ctx, { sqRef: w.sqRef, recoveryId: randomUUID(), safeAddress: w.safe, newOwnerAddress: key().address, identity: "verified" }) as any;
+    expect((await requestDetail(w.ctx, w.lawyerId, { id: verified.requestId })).recovery?.identity).toBe("verified");
 
     await decide(w, w.ctx, (req as any).requestId, "approve");
     const out = (await recoveryStatus(w.ctx, { sqRef: w.sqRef, recoveryId })) as { status: string; signature: Hex; safeTxHash: Hex };

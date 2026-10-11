@@ -107,6 +107,7 @@ export async function requestDetail(ctx: Ctx, lawyerId: string, input: Input): P
   let recovery: RecoveryInfo | undefined;
   if (r.kind === "recovery" || r.kind === "exit") {
     const exit = r.kind === "exit" ? (await ctx.db.select("exit_requests", { id: r.external_ref }))[0] : undefined;
+    const rc = r.kind === "recovery" ? (await ctx.db.select("recovery_cases", { recovery_id: r.external_ref }))[0] : undefined;
     const releaseAfter = exit?.release_after ? iso(exit.release_after) : undefined;
     const states: TimelineStep["state"][] =
       r.status === "pending" ? ["done", "current", "todo", "todo", "todo"]
@@ -114,7 +115,7 @@ export async function requestDetail(ctx: Ctx, lawyerId: string, input: Input): P
       : r.status === "refused" ? ["done", "failed", "todo", "todo", "todo"] : ["done", "failed", "todo", "todo", "todo"];
     recovery = {
       oldAddress: getAddress(r.safe_address),
-      ...(r.kind === "recovery" ? { newAddress: getAddress((r.intent as any).newOwner) } : {}),
+      ...(r.kind === "recovery" ? { newAddress: getAddress((r.intent as any).newOwner), identity: (rc?.identity_status === "verified" ? "verified" : "pending") as "verified" | "pending" } : {}),
       timeline: timeline(states, [iso(r.created_at), r.decided_at ? iso(r.decided_at) : undefined]),
       ...(releaseAfter && r.status === "approved" ? { delayEndsAt: releaseAfter } : {}),
     };

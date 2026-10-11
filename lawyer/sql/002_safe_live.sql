@@ -29,6 +29,7 @@ alter table recovery_cases add column if not exists new_owner_address text;
 alter table recovery_cases add column if not exists safe_tx_hash text;
 alter table recovery_cases add column if not exists p2_signature text;
 alter table recovery_cases add column if not exists assertion_hash text;
+alter table recovery_cases add column if not exists identity_status text;
 alter table exit_requests add column if not exists safe_tx_hash text;
 alter table exit_requests add column if not exists p2_signature text;
 alter table exit_requests add column if not exists assertion_hash text;

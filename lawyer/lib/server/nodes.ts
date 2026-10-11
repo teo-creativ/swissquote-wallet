@@ -235,6 +235,9 @@ export async function recoveryRequest(ctx: Ctx, input: Input) {
   await ctx.db.insert("recovery_cases", {
     recovery_id: recoveryId, client_id: client.id, old_address: safe.toLowerCase(), new_address: newOwner.toLowerCase(), status: "pending",
     safe_address: safe.toLowerCase(), new_owner_address: newOwner.toLowerCase(), created_at: ctx.now.toISOString(),
+    // Informational for the lawyer's screen: the client app only asks for approval after Swissquote's identity check passed. Swissquote's node
+    // checks it again by itself before it signs, so this value is never what protects the funds.
+    identity_status: input.identity === "verified" ? "verified" : "pending",
   });
   await appendAudit(ctx, "node", "RECOVERY_REQUESTED", client.id, { recoveryId, requestId: request.id, safe: safe.toLowerCase(), newOwner: newOwner.toLowerCase() });
   return { status: "pending", requestId: request.id, expiresAt };
