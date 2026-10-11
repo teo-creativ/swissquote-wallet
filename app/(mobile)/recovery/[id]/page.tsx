@@ -142,7 +142,7 @@ function Track({ id }: { id: string }) {
         </div>
       }
     >
-      <Banner variant="demo" className="mb-4">{isMockMode ? "Demo mode: recovery delay is 2 minutes. In production it would be 24 hours." : "Demo mode: the waiting period is short for the demo. In production it would be 24 hours."}</Banner>
+      <Banner variant="demo" className="mb-4">{isMockMode ? "Demo mode: recovery delay is 2 minutes. In production it would be 24 hours." : "Demo mode: recovery delay is 15 seconds. In production it would be 24 hours."}</Banner>
 
       {failedIdentity ? (
         <Banner variant="warning">We could not verify your identity. Your lawyer was alerted.</Banner>

@@ -122,7 +122,7 @@ export function RecoveryDetail({
           {steps.length > 0 ? <Timeline items={steps} label={`${title} timeline`} /> : <p className="text-sm text-muted">No steps yet.</p>}
           <div className="mt-6 flex flex-wrap items-center gap-2 border-t border-line pt-4">
             <SimulatedPill>Simulated identity check</SimulatedPill>
-            <span className="text-xs text-muted">Demo mode: recovery delay is 2 minutes. In production it would be 24 hours.</span>
+            <span className="text-xs text-muted">{process.env.NEXT_PUBLIC_LAWYER_MODE === "live" ? "Demo mode: recovery delay is 15 seconds. In production it would be 24 hours." : "Demo mode: recovery delay is 2 minutes. In production it would be 24 hours."}</span>
           </div>
         </Card>
 

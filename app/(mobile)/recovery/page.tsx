@@ -48,7 +48,7 @@ export default function RecoveryStartPage() {
           ? "We will check your identity, create a new wallet on this phone and move your funds to it. Your lawyer must approve, and there is a waiting period during which you can cancel. Your wallet address will change."
           : "We will check your identity and create a new key on this phone. Your lawyer must approve, and there is a waiting period during which you can cancel. Then your old key is replaced by the new one on your wallet. Your wallet address and your funds stay the same."}
       </p>
-      <Banner variant="demo" className="mt-6">Demo mode: recovery delay is 2 minutes. In production it would be 24 hours.</Banner>
+      <Banner variant="demo" className="mt-6">{isMockMode ? "Demo mode: recovery delay is 2 minutes. In production it would be 24 hours." : "Demo mode: recovery delay is 15 seconds. In production it would be 24 hours."}</Banner>
       {error && <Banner variant="warning" className="mt-4">{error}</Banner>}
     </PageShell>
   );

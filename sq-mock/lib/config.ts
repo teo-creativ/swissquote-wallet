@@ -36,7 +36,7 @@ function wei(value: string | undefined, fallback: bigint): bigint {
 export function readConfig(env: Record<string, string | undefined> = process.env): Config {
   return {
     usdcAddress: getAddress(env.USDC_ADDRESS || DEFAULT_USDC),
-    recoveryDelaySeconds: positiveInt(env.RECOVERY_DELAY_SECONDS, 120),
+    recoveryDelaySeconds: positiveInt(env.RECOVERY_DELAY_SECONDS, 15),
     gasDripWei: wei(env.GAS_DRIP_WEI, 300_000_000_000_000n),
     gasDripMinBalanceWei: wei(env.GAS_DRIP_MIN_BALANCE_WEI, 100_000_000_000_000n),
     gasDripDailyCap: positiveInt(env.GAS_DRIP_DAILY_CAP, 50),

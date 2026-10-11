@@ -183,9 +183,9 @@ describe("recovery: P3 signs only when identity, delay and lawyer approval all h
   it("refuses to sign during the safety delay, signs after it", async () => {
     const r = await opened();
     await r.verify();
-    const during = r.at(60_000);
+    const during = r.at(10_000);
     expect(await code(nodeSign(during, { recoveryId: r.recoveryId, safeTxHash: r.hash, p2Signature: r.lawyerSig }))).toBe("403 DELAY_NOT_ELAPSED");
-    expect(await code(nodeSign(r.at(121_000), { recoveryId: r.recoveryId, safeTxHash: r.hash, p2Signature: r.lawyerSig }))).toBe("no error");
+    expect(await code(nodeSign(r.at(16_000), { recoveryId: r.recoveryId, safeTxHash: r.hash, p2Signature: r.lawyerSig }))).toBe("no error");
   });
   it("refuses without the lawyer's approval: no signature, a stranger's signature, or a signature over another hash", async () => {
     const r = await opened();

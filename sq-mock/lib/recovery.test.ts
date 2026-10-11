@@ -24,7 +24,7 @@ describe("recovery identity check", () => {
 
     const verifiedAt = at(30_000);
     const res = await identityVerify(verifiedAt, good(recoveryId));
-    const expectedRelease = new Date(verifiedAt.now.getTime() + 120_000).toISOString();
+    const expectedRelease = new Date(verifiedAt.now.getTime() + 15_000).toISOString();
     expect(res).toEqual({ verified: true, releaseAfter: expectedRelease, simulated: true });
     expect(await recoveryStatus(deps, { recoveryId })).toMatchObject({ identityVerified: true, releaseAfter: expectedRelease, cancelled: false });
     expect((await store.getIdentityCheck(recoveryId))?.identityVerifiedAt).toBe(verifiedAt.now.toISOString());
@@ -88,8 +88,8 @@ describe("recovery release checks (used by the P3 node)", () => {
     const check = (await store.getIdentityCheck(recoveryId))!;
     const t = deps.now.getTime();
     expect(releaseBlock(check, new Date(t))).toBe("DELAY_NOT_ELAPSED");
-    expect(releaseBlock(check, new Date(t + 119_999))).toBe("DELAY_NOT_ELAPSED");
-    expect(releaseBlock(check, new Date(t + 120_000))).toBeNull();
+    expect(releaseBlock(check, new Date(t + 14_999))).toBe("DELAY_NOT_ELAPSED");
+    expect(releaseBlock(check, new Date(t + 15_000))).toBeNull();
     expect(releaseBlock({ ...check, usedAt: new Date(t + 130_000).toISOString() }, new Date(t + 140_000))).toBe("RECOVERY_ALREADY_USED");
     expect(releaseBlock({ ...check, cancelledAt: new Date(t + 10_000).toISOString() }, new Date(t + 140_000))).toBe("RECOVERY_CANCELLED");
   });
